@@ -8,30 +8,30 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // susCoin Color Palette
+        // susCoin Color Palette using CSS variables
         'sus': {
-          'bg': '#F6F8FA',
-          'card': '#FFFFFF',
-          'text': '#0B1220',
-          'muted': '#64748B',
-          'primary': '#065F46',
-          'secondary': '#1D4ED8',
-          'accent': '#A3E635',
-          'line': '#E5E7EB',
-          'success': '#16A34A',
-          'warning': '#F59E0B',
-          'error': '#EF4444',
-          'info': '#0891B2',
+          'bg': 'var(--bg)',
+          'card': 'var(--card)',
+          'text': 'var(--text)',
+          'muted': 'var(--muted)',
+          'primary': 'var(--primary)',
+          'secondary': 'var(--secondary)',
+          'accent': 'var(--accent)',
+          'line': 'var(--line)',
+          'success': 'var(--success)',
+          'warning': 'var(--warning)',
+          'error': 'var(--error)',
+          'info': 'var(--info)',
           // Data visualization colors (colorblind-safe)
           'data': {
-            '1': '#0072B2',
-            '2': '#E69F00',
-            '3': '#009E73',
-            '4': '#F0E442',
-            '5': '#56B4E9',
-            '6': '#D55E00',
-            '7': '#CC79A7',
-            '8': '#000000',
+            '1': 'var(--data-1)',
+            '2': 'var(--data-2)',
+            '3': 'var(--data-3)',
+            '4': 'var(--data-4)',
+            '5': 'var(--data-5)',
+            '6': 'var(--data-6)',
+            '7': 'var(--data-7)',
+            '8': 'var(--data-8)',
           }
         },
         // Dark theme colors
