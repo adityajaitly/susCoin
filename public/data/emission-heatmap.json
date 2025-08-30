@@ -1,0 +1,72 @@
+[
+  {
+    "state": "New South Wales",
+    "stateCode": "NSW",
+    "emissions": 135279.33363856605,
+    "year": 2020,
+    "lat": -33.8688,
+    "lng": 151.2093,
+    "intensity": 0.6763966681928303,
+    "emissionsFormatted": "135.3 Mt CO2-e"
+  },
+  {
+    "state": "Queensland",
+    "stateCode": "QLD",
+    "emissions": 161178.26612996234,
+    "year": 2020,
+    "lat": -27.4698,
+    "lng": 153.0251,
+    "intensity": 0.8058913306498117,
+    "emissionsFormatted": "161.2 Mt CO2-e"
+  },
+  {
+    "state": "Victoria",
+    "stateCode": "VIC",
+    "emissions": 88404.16011419627,
+    "year": 2020,
+    "lat": -37.8136,
+    "lng": 144.9631,
+    "intensity": 0.44202080057098136,
+    "emissionsFormatted": "88.4 Mt CO2-e"
+  },
+  {
+    "state": "Western Australia",
+    "stateCode": "WA",
+    "emissions": 91216.6677324905,
+    "year": 2020,
+    "lat": -31.9505,
+    "lng": 115.8605,
+    "intensity": 0.45608333866245254,
+    "emissionsFormatted": "91.2 Mt CO2-e"
+  },
+  {
+    "state": "South Australia",
+    "stateCode": "SA",
+    "emissions": 24042.268818912125,
+    "year": 2020,
+    "lat": -34.9285,
+    "lng": 138.6007,
+    "intensity": 0.12021134409456062,
+    "emissionsFormatted": "24.0 Mt CO2-e"
+  },
+  {
+    "state": "Northern Territory",
+    "stateCode": "NT",
+    "emissions": 17162.24977127628,
+    "year": 2020,
+    "lat": -12.4634,
+    "lng": 130.8456,
+    "intensity": 0.0858112488563814,
+    "emissionsFormatted": "17.2 Mt CO2-e"
+  },
+  {
+    "state": "Australian Capital Territory",
+    "stateCode": "ACT",
+    "emissions": 1185.9778178087836,
+    "year": 2020,
+    "lat": -35.2809,
+    "lng": 149.13,
+    "intensity": 0.005929889089043918,
+    "emissionsFormatted": "1.2 Mt CO2-e"
+  }
+]

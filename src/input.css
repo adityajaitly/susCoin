@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Map container styles */
+#impactMap {
+    min-height: 300px;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Ensure map tiles load properly */
+.leaflet-container {
+    background: #f8f9fa;
+}
+
+/* Error text color */
+.text-sus-error {
+    color: #dc2626;
+}
+
 /* susCoin Custom CSS Variables */
 :root {
   --bg: #F6F8FA;

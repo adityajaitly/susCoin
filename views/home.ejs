@@ -13,11 +13,13 @@
     <script src="/socket.io/socket.io.js"></script>
     
     <!-- Leaflet for maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="/js/lib/leaflet.css" />
+    <script src="/js/lib/leaflet.js"></script>
+    <!-- Leaflet.heat plugin for heatmaps -->
+    <script src="/js/lib/leaflet-heat.js"></script>
     
     <!-- Confetti library -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="/js/lib/canvas-confetti.js"></script>
 </head>
 <body class="bg-sus-bg text-sus-text font-sans antialiased">
     <!-- Theme Toggle -->
@@ -115,7 +117,21 @@
                 <!-- Map -->
                 <div class="lg:col-span-2">
                     <div class="card h-96">
-                        <div id="impactMap" class="w-full h-full rounded-lg"></div>
+                        <div id="impactMap" class="w-full h-full rounded-lg relative">
+                            <!-- Loading indicator -->
+                            <div id="mapLoading" class="absolute inset-0 flex items-center justify-center bg-sus-card z-10">
+                                <div class="text-center">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-sus-primary mx-auto mb-4"></div>
+                                    <p class="text-sus-muted">Loading emission heatmap...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 border-t border-sus-line">
+                            <div class="flex items-center justify-between text-sm text-sus-muted">
+                                <span>🌍 Australian Emissions 2020</span>
+                                <span>Data: Department of Climate Change</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -646,7 +662,78 @@
         // Map updates
         function updateMap(type, value) {
             trackEvent('map_filter', { type, value });
-            // In a real app, you'd update the map visualization here
+            
+            // Update map based on filter type
+            if (type === 'view') {
+                // Update the map view based on selected metric
+                updateMapView(value);
+            } else if (type === 'time') {
+                // Update time period (could load different year data)
+                updateTimePeriod(value);
+            } else if (type === 'gigType') {
+                // Update gig type filter
+                updateGigTypeFilter(value);
+            }
+        }
+        
+        // Update map view based on selected metric
+        function updateMapView(viewType) {
+            const map = window.impactMap;
+            if (!map) return;
+            
+            // Remove existing heatmap layer if it exists
+            if (window.heatmapLayer) {
+                map.removeLayer(window.heatmapLayer);
+            }
+            
+            // Reload data with new view type
+            fetch('/data/emission-heatmap.json')
+                .then(response => response.json())
+                .then(data => {
+                    let heatmapData;
+                    
+                    switch(viewType) {
+                        case 'co2':
+                            // Show CO2 emissions (default)
+                            heatmapData = data.map(item => [item.lat, item.lng, item.intensity]);
+                            break;
+                        case 'participation':
+                            // Show participation rate (mock data)
+                            heatmapData = data.map(item => [item.lat, item.lng, Math.random() * 0.8 + 0.2]);
+                            break;
+                        case 'equity':
+                            // Show equity index (mock data)
+                            heatmapData = data.map(item => [item.lat, item.lng, Math.random() * 0.6 + 0.4]);
+                            break;
+                        default:
+                            heatmapData = data.map(item => [item.lat, item.lng, item.intensity]);
+                    }
+                    
+                    // Add new heatmap layer
+                    window.heatmapLayer = L.heatLayer(heatmapData, {
+                        radius: 50,
+                        blur: 30,
+                        maxZoom: 10,
+                        gradient: {
+                            0.0: '#00ff00',
+                            0.3: '#ffff00',
+                            0.6: '#ff8000',
+                            1.0: '#ff0000'
+                        }
+                    }).addTo(map);
+                });
+        }
+        
+        // Update time period
+        function updateTimePeriod(timePeriod) {
+            // In a real app, this would load data for different time periods
+            console.log('Time period updated:', timePeriod);
+        }
+        
+        // Update gig type filter
+        function updateGigTypeFilter(gigType) {
+            // In a real app, this would filter data by gig type
+            console.log('Gig type filter updated:', gigType);
         }
         
         // Impact calculator
@@ -734,39 +821,189 @@
         
         // Initialize map
         function initMap() {
-            const map = L.map('impactMap').setView([45.5152, -122.6784], 11); // Portland coordinates
+            console.log('Initializing map...');
             
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            // Check if Leaflet is available
+            if (typeof L === 'undefined') {
+                console.error('Leaflet is not loaded!');
+                showMapError('Leaflet library not loaded');
+                return;
+            }
             
-            // Add some sample markers
-            const sampleData = [
-                { lat: 45.5152, lng: -122.6784, title: 'Downtown West', impact: 847 },
-                { lat: 45.5231, lng: -122.6765, title: 'Pearl District', impact: 723 },
-                { lat: 45.5215, lng: -122.6811, title: 'Old Town', impact: 689 }
-            ];
+            console.log('Leaflet is available:', L);
             
-            sampleData.forEach(point => {
-                const color = point.impact > 800 ? '#065F46' : point.impact > 700 ? '#1D4ED8' : '#A3E635';
-                L.circleMarker([point.lat, point.lng], {
-                    radius: Math.sqrt(point.impact) / 10,
-                    fillColor: color,
-                    color: color,
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.7
-                }).addTo(map).bindPopup(`${point.title}<br>${point.impact} credits`);
-            });
+            try {
+                // Center on Australia
+                const map = L.map('impactMap').setView([-25.2744, 133.7751], 4);
+                window.impactMap = map; // Store map reference globally
+                
+                console.log('Map created successfully');
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                console.log('Tile layer added');
+                
+                // Test basic map functionality first
+                L.marker([-25.2744, 133.7751]).addTo(map)
+                    .bindPopup('Australia - Map is working!')
+                    .openPopup();
+                
+                console.log('Test marker added');
+                
+                // Load emission data and create heatmap
+                fetch('/data/emission-heatmap.json')
+                    .then(response => {
+                        console.log('Data response:', response);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Emission data loaded:', data);
+                        
+                        // Hide loading indicator
+                        const loadingEl = document.getElementById('mapLoading');
+                        if (loadingEl) {
+                            loadingEl.style.display = 'none';
+                        }
+                        
+                        // Create heatmap data points
+                        const heatmapData = data.map(item => [
+                            item.lat,
+                            item.lng,
+                            item.intensity
+                        ]);
+                        
+                        console.log('Heatmap data prepared:', heatmapData);
+                        
+                        // Add heatmap layer
+                        window.heatmapLayer = L.heatLayer(heatmapData, {
+                            radius: 50,
+                            blur: 30,
+                            maxZoom: 10,
+                            gradient: {
+                                0.0: '#00ff00',   // Green for low emissions
+                                0.3: '#ffff00',   // Yellow for medium
+                                0.6: '#ff8000',   // Orange for high
+                                1.0: '#ff0000'    // Red for very high
+                            }
+                        }).addTo(map);
+                        
+                        console.log('Heatmap layer added');
+                        
+                        // Add state markers with popups
+                        data.forEach(state => {
+                            const color = state.intensity > 0.6 ? '#dc2626' : 
+                                        state.intensity > 0.4 ? '#ea580c' : 
+                                        state.intensity > 0.2 ? '#ca8a04' : '#16a34a';
+                            
+                            L.circleMarker([state.lat, state.lng], {
+                                radius: Math.max(8, state.intensity * 20),
+                                fillColor: color,
+                                color: color,
+                                weight: 2,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            }).addTo(map).bindPopup(`
+                                <div class="text-center">
+                                    <strong>${state.state}</strong><br>
+                                    <span class="text-red-600 font-semibold">${state.emissionsFormatted}</span><br>
+                                    <small class="text-gray-600">2020 Emissions</small>
+                                </popup>
+                            `);
+                        });
+                        
+                        console.log('Map initialization complete');
+                    })
+                    .catch(error => {
+                        console.error('Error loading emission data:', error);
+                        
+                        // Hide loading indicator
+                        const loadingEl = document.getElementById('mapLoading');
+                        if (loadingEl) {
+                            loadingEl.style.display = 'none';
+                        }
+                        
+                        // Show error message
+                        const mapContainer = document.getElementById('impactMap');
+                        mapContainer.innerHTML = `
+                            <div class="flex items-center justify-center h-full">
+                                <div class="text-center text-sus-error">
+                                    <div class="text-2xl mb-2">❌</div>
+                                    <p>Failed to load emission data</p>
+                                    <p class="text-sm text-sus-muted">Check console for details</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Fallback to sample data
+                        const sampleData = [
+                            { lat: -33.8688, lng: 151.2093, title: 'Sydney', impact: 847 },
+                            { lat: -37.8136, lng: 144.9631, title: 'Melbourne', impact: 723 },
+                            { lat: -27.4698, lng: 153.0251, title: 'Brisbane', impact: 689 }
+                        ];
+                        
+                        sampleData.forEach(point => {
+                            L.circleMarker([point.lat, point.lng], {
+                                radius: Math.sqrt(point.impact) / 10,
+                                fillColor: '#065F46',
+                                color: '#065F46',
+                                weight: 2,
+                                opacity: 1,
+                                fillOpacity: 0.7
+                            }).addTo(map).bindPopup(`${point.title}<br>${point.impact} credits`);
+                        });
+                    });
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                
+                // Hide loading indicator
+                const loadingEl = document.getElementById('mapLoading');
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
+                
+                // Show error message
+                const mapContainer = document.getElementById('impactMap');
+                mapContainer.innerHTML = `
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center text-sus-error">
+                            <div class="text-2xl mb-2">❌</div>
+                            <p>Failed to initialize map</p>
+                            <p class="text-sm text-sus-muted">Check console for details</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Helper function to show map errors
+        function showMapError(message) {
+            const mapContainer = document.getElementById('impactMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center text-sus-error">
+                            <div class="text-2xl mb-2">❌</div>
+                            <p>${message}</p>
+                            <p class="text-sm text-sus-muted">Check console for details</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
         
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            initMap();
-            updateCalculator();
-            
-            // Track page view
-            trackEvent('page_view', { page: 'home' });
+            // Add a small delay to ensure everything is loaded
+            setTimeout(() => {
+                console.log('DOM loaded, initializing map...');
+                initMap();
+                updateCalculator();
+                
+                // Track page view
+                trackEvent('page_view', { page: 'home' });
+            }, 100);
         });
     </script>
 </body>

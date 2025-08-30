@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emission Heatmap Test</title>
+    
+    <!-- Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .info {
+            padding: 20px;
+            background: #f0f0f0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>Australian Emissions Heatmap Test</h1>
+        <p>This page tests the emission heatmap using real data from the Department of Climate Change.</p>
+        <p>Data source: ageis-state-territory-inventories-2020-emission-data-tables.xlsx</p>
+    </div>
+    
+    <div id="map"></div>
+    
+    <div class="info">
+        <h3>Heatmap Legend:</h3>
+        <ul>
+            <li><span style="color: #00ff00;">🟢 Green:</span> Low emissions (ACT, NT)</li>
+            <li><span style="color: #ffff00;">🟡 Yellow:</span> Medium emissions (SA, TAS)</li>
+            <li><span style="color: #ff8000;">🟠 Orange:</span> High emissions (VIC, WA)</li>
+            <li><span style="color: #ff0000;">🔴 Red:</span> Very high emissions (NSW, QLD)</li>
+        </ul>
+    </div>
+
+    <script>
+        // Initialize map centered on Australia
+        const map = L.map('map').setView([-25.2744, 133.7751], 4);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Load emission data and create heatmap
+        fetch('/data/emission-heatmap.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Emission data loaded:', data);
+                
+                // Create heatmap data points
+                const heatmapData = data.map(item => [
+                    item.lat,
+                    item.lng,
+                    item.intensity
+                ]);
+                
+                console.log('Heatmap data:', heatmapData);
+                
+                // Add heatmap layer
+                const heatmapLayer = L.heatLayer(heatmapData, {
+                    radius: 50,
+                    blur: 30,
+                    maxZoom: 10,
+                    gradient: {
+                        0.0: '#00ff00',   // Green for low emissions
+                        0.3: '#ffff00',   // Yellow for medium
+                        0.6: '#ff8000',   // Orange for high
+                        1.0: '#ff0000'    // Red for very high
+                    }
+                }).addTo(map);
+                
+                // Add state markers with popups
+                data.forEach(state => {
+                    const color = state.intensity > 0.6 ? '#dc2626' : 
+                                state.intensity > 0.4 ? '#ea580c' : 
+                                state.intensity > 0.2 ? '#ca8a04' : '#16a34a';
+                    
+                    L.circleMarker([state.lat, state.lng], {
+                        radius: Math.max(8, state.intensity * 20),
+                        fillColor: color,
+                        color: color,
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map).bindPopup(`
+                        <div class="text-center">
+                            <strong>${state.state}</strong><br>
+                            <span class="text-red-600 font-semibold">${state.emissionsFormatted}</span><br>
+                            <small class="text-gray-600">2020 Emissions</small><br>
+                            <small class="text-gray-500">Intensity: ${state.intensity.toFixed(3)}</small>
+                        </div>
+                    `);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading emission data:', error);
+                document.body.innerHTML += '<div class="info" style="color: red;">Error loading emission data. Check console for details.</div>';
+            });
+    </script>
+</body>
+</html>

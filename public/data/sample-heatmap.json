@@ -1,0 +1,58 @@
+[
+  {
+    "lat": -33.8688,
+    "lng": 151.2093,
+    "intensity": 0.8,
+    "state": "New South Wales",
+    "emissions": 125000
+  },
+  {
+    "lat": -37.8136,
+    "lng": 144.9631,
+    "intensity": 0.7,
+    "state": "Victoria",
+    "emissions": 98000
+  },
+  {
+    "lat": -27.4698,
+    "lng": 153.0251,
+    "intensity": 0.6,
+    "state": "Queensland",
+    "emissions": 85000
+  },
+  {
+    "lat": -31.9505,
+    "lng": 115.8605,
+    "intensity": 0.5,
+    "state": "Western Australia",
+    "emissions": 72000
+  },
+  {
+    "lat": -34.9285,
+    "lng": 138.6007,
+    "intensity": 0.4,
+    "state": "South Australia",
+    "emissions": 45000
+  },
+  {
+    "lat": -42.8821,
+    "lng": 147.3272,
+    "intensity": 0.3,
+    "state": "Tasmania",
+    "emissions": 28000
+  },
+  {
+    "lat": -12.4634,
+    "lng": 130.8456,
+    "intensity": 0.2,
+    "state": "Northern Territory",
+    "emissions": 15000
+  },
+  {
+    "lat": -35.2809,
+    "lng": 149.13,
+    "intensity": 0.1,
+    "state": "Australian Capital Territory",
+    "emissions": 8000
+  }
+]
