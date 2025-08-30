@@ -855,13 +855,6 @@
                 
                 console.log('Tile layer added');
                 
-                // Test basic map functionality first
-                L.marker([-25.2744, 133.7751]).addTo(map)
-                    .bindPopup('Australia - Map is working!')
-                    .openPopup();
-                
-                console.log('Test marker added');
-                
                 // Load emission data and create heatmap
                 fetch('/data/emission-heatmap.json')
                     .then(response => {

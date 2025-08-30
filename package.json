@@ -30,7 +30,8 @@
     "helmet": "^7.0.0",
     "nanoid": "^5.1.5",
     "socket.io": "^4.7.2",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
