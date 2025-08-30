@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "build:css": "tailwindcss -i ./src/input.css -o ./public/styles/output.css --watch",
     "build": "tailwindcss -i ./src/input.css -o ./public/styles/output.css --minify",
-    "seed": "echo 'Seed script will be added in step 6'"
+    "seed": "node scripts/seed.js"
   },
   "keywords": [
     "carbon-credits",

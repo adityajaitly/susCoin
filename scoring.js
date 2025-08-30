@@ -46,6 +46,11 @@ function band(distanceKm){
 const COIN_PER_BAND = 1; // tweakable economy knob
 
 function scoreTransport({ mode, distanceKm }){
+  // thresholds that match your brief
+  if (['plane (domestic)','plane (intl)'].includes(mode) && distanceKm < 250) return { score:0, coins:0, co2eSavedKg:0, distanceKm };
+  if (mode === 'walking' && distanceKm > 25) return { score:0, coins:0, co2eSavedKg:0, distanceKm:25 };
+  if (['metro/urban rail', 'intercity rail'].includes(mode) && distanceKm > 1500) distanceKm = 1500;
+
   const b = band(distanceKm);
   const row = table.find(r => Number(r.distance_km) === b);
   if (!row) return { score: 0, coins: 0, co2eSavedKg: 0, distanceKm: b };
