@@ -95,6 +95,8 @@ app.get('/api/live-data', (req, res) => {
   res.json(liveData);
 });
 
+
+
 app.post('/api/demo-scan', (req, res) => {
   res.json({
     success: true,

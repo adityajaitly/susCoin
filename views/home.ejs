@@ -581,8 +581,7 @@
         
         themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         
-        console.log('Initial theme:', savedTheme);
-        console.log('Dark mode active:', html.classList.contains('dark'));
+
         
         themeToggle.addEventListener('click', () => {
             const isDark = html.classList.toggle('dark');
@@ -595,8 +594,7 @@
                 themeToggle.style.transform = 'scale(1)';
             }, 150);
             
-            console.log('Theme toggled to:', isDark ? 'dark' : 'light');
-            console.log('Dark mode active:', html.classList.contains('dark'));
+
         });
         
         // Real-time data updates
