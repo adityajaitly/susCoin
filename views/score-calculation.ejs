@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/styles/output.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-teal-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-emerald-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/" class="text-2xl font-bold text-emerald-600">🌱 susCoin</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <a href="/wallet" class="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">Wallet</a>
+                    <a href="/calculator" class="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">Calculator</a>
+                    <a href="/score-calculation" class="text-emerald-600 border-b-2 border-emerald-600 px-3 py-2 rounded-md text-sm font-medium">Score Calculation</a>
+                    <a href="/redeem" class="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">Redeem</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">🚇 Transport Score Calculation</h1>
+            <p class="text-xl text-gray-600">Calculate your carbon credits based on your transport choices and distance traveled</p>
+        </div>
+
+        <!-- Score Calculator Form -->
+        <div class="bg-white rounded-lg shadow-xl p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Calculate Your Transport Impact</h2>
+            
+            <form id="scoreForm" class="space-y-6">
+                <!-- Transport Mode Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Transport Mode</label>
+                    <select id="transportMode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="">Select transport mode</option>
+                        <option value="walking">🚶 Walking</option>
+                        <option value="bike">🚴 Bike</option>
+                        <option value="e-bike">⚡ E-Bike</option>
+                        <option value="e-scooter">🛴 E-Scooter</option>
+                        <option value="bus (city)">🚌 City Bus</option>
+                        <option value="bus (coach)">🚌 Coach Bus</option>
+                        <option value="tram/light rail">🚊 Tram/Light Rail</option>
+                        <option value="metro/urban rail">🚇 Metro/Urban Rail</option>
+                        <option value="intercity rail">🚄 Intercity Rail</option>
+                        <option value="brt (rapid bus)">🚌 BRT (Rapid Bus)</option>
+                        <option value="carpool (3+)">🚗 Carpool (3+ people)</option>
+                        <option value="car (2 pax)">🚗 Car (2 passengers)</option>
+                        <option value="car (solo/taxi)">🚕 Car (Solo/Taxi)</option>
+                        <option value="rideshare pooled">🚗 Rideshare (Pooled)</option>
+                        <option value="ferry">⛴️ Ferry</option>
+                        <option value="plane (domestic)">✈️ Plane (Domestic)</option>
+                        <option value="plane (intl)">✈️ Plane (International)</option>
+                    </select>
+                </div>
+
+                <!-- Distance Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Distance (km)</label>
+                    <input type="number" id="distance" min="0" step="0.1" placeholder="Enter distance in kilometers" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <p class="text-sm text-gray-500 mt-1">Distances beyond 2500 km will be capped at 2500 km (scores remain the same)</p>
+                </div>
+
+                <!-- Calculate Button -->
+                <button type="submit" class="w-full bg-emerald-600 text-white py-3 px-6 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    🧮 Calculate Score
+                </button>
+            </form>
+        </div>
+
+                    <!-- Results Display -->
+            <div id="results" class="hidden bg-white rounded-lg shadow-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Transport Score Results</h2>
+                
+                <!-- Distance Capping Notice -->
+                <div id="distanceCappingNotice" class="hidden mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="text-blue-600 mr-2">ℹ️</div>
+                        <div class="text-blue-800 text-sm">
+                            <strong>Distance Capped:</strong> Your input distance was beyond 2500 km, so the calculation was performed using 2500 km. 
+                            Transport scores remain the same for distances beyond 2500 km.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Transport Score -->
+                    <div class="bg-emerald-50 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-emerald-600" id="transportScore">-</div>
+                        <div class="text-sm text-gray-600">Transport Score</div>
+                    </div>
+
+                    <!-- Carbon Credits Earned -->
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-blue-600" id="creditsEarned">-</div>
+                        <div class="text-sm text-gray-600">Credits Earned</div>
+                    </div>
+
+                    <!-- CO2 Saved -->
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-green-600" id="co2Saved">-</div>
+                        <div class="text-sm text-gray-600">CO2 Saved (kg)</div>
+                    </div>
+                </div>
+
+            <!-- Detailed Breakdown -->
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Calculation Details</h3>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div><strong>Transport Mode:</strong> <span id="selectedMode">-</span></div>
+                    <div><strong>Distance:</strong> <span id="selectedDistance">-</span> km</div>
+                    <div><strong>Score Multiplier:</strong> <span id="scoreMultiplier">-</span></div>
+                    <div><strong>Calculation:</strong> <span id="calculation">-</span></div>
+                    <div><strong>Data Source:</strong> <span id="dataSource">-</span></div>
+                </div>
+            </div>
+
+            <!-- Log Action Button -->
+            <div class="mt-6 text-center">
+                <button id="logActionBtn" class="hidden inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors">
+                    📝 Log This Action
+                </button>
+                <div id="actionLogged" class="hidden mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div class="flex items-center justify-center">
+                        <div class="text-emerald-600 mr-2">✅</div>
+                        <div class="text-emerald-800 text-sm">
+                            <strong>Action logged successfully!</strong> 
+                            <a href="/wallet" class="text-emerald-600 hover:text-emerald-800 underline ml-1">View your wallet</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transport Score Reference -->
+        <div class="bg-white rounded-lg shadow-xl p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">📊 Transport Score Reference</h2>
+            <p class="text-gray-600 mb-4">Understanding how transport scores work:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- High Score Transport -->
+                <div class="bg-green-50 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-green-800 mb-2">🌱 High Score (8-10)</h3>
+                    <ul class="text-sm text-green-700 space-y-1">
+                        <li>• Walking (0-25km)</li>
+                        <li>• Cycling (0-55km)</li>
+                        <li>• E-Bike (0-55km)</li>
+                        <li>• E-Scooter (0-25km)</li>
+                        <li>• Public Transport (0-55km)</li>
+                    </ul>
+                </div>
+
+                <!-- Medium Score Transport -->
+                <div class="bg-yellow-50 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-yellow-800 mb-2">🟡 Medium Score (5-8)</h3>
+                    <ul class="text-sm text-yellow-700 space-y-1">
+                        <li>• Bus (55-2500km)</li>
+                        <li>• Tram/Light Rail (55-2500km)</li>
+                        <li>• Metro/Urban Rail (55-2500km)</li>
+                        <li>• Carpool (55-2500km)</li>
+                        <li>• Ferry (10-2500km)</li>
+                    </ul>
+                </div>
+
+                <!-- Low Score Transport -->
+                <div class="bg-red-50 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-red-800 mb-2">🔴 Low Score (1-5)</h3>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li>• Car (Solo/Taxi)</li>
+                        <li>• Plane (Domestic)</li>
+                        <li>• Plane (International)</li>
+                    </ul>
+                </div>
+
+                <!-- Distance Impact -->
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-blue-800 mb-2">📏 Distance Impact</h3>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• Scores decrease with distance</li>
+                        <li>• Walking/cycling best for short trips</li>
+                        <li>• Public transport optimal for medium distances</li>
+                        <li>• Long distances have lower scores</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opal Card Integration Info -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-xl p-6 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">💳 Opal Card Integration</h2>
+            <p class="text-gray-600 mb-4">Connect your Opal card to automatically calculate scores based on your actual travel data:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-medium text-blue-800 mb-2">🚀 Coming Soon Features</h3>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• Automatic journey detection</li>
+                        <li>• Real-time score calculation</li>
+                        <li>• Journey history tracking</li>
+                        <li>• Monthly impact summaries</li>
+                        <li>• Integration with susCoin wallet</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-blue-800 mb-2">📱 How It Works</h3>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• Link your Opal card to susCoin</li>
+                        <li>• App reads your travel data</li>
+                        <li>• Calculates scores automatically</li>
+                        <li>• Credits added to your wallet</li>
+                        <li>• Track your climate impact</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <a href="/connect-opal" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    🔗 Connect Opal Card
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Transport scores data (simplified version for demo)
+        const transportScores = {
+            'walking': { base: 8.78, maxDistance: 25 },
+            'bike': { base: 8.73, maxDistance: 55 },
+            'e-bike': { base: 9.32, maxDistance: 55 },
+            'e-scooter': { base: 9.27, maxDistance: 25 },
+            'bus (city)': { base: 6.38, maxDistance: 2500 },
+            'bus (coach)': { base: 0, maxDistance: 2500 },
+            'tram/light rail': { base: 6.31, maxDistance: 2500 },
+            'metro/urban rail': { base: 3.0, maxDistance: 2500 },
+            'intercity rail': { base: 0, maxDistance: 2500 },
+            'brt (rapid bus)': { base: 0, maxDistance: 2500 },
+            'carpool (3+)': { base: 6.75, maxDistance: 2500 },
+            'car (2 pax)': { base: 6.14, maxDistance: 2500 },
+            'car (solo/taxi)': { base: 3.79, maxDistance: 2500 },
+            'rideshare pooled': { base: 5.73, maxDistance: 2500 },
+            'ferry': { base: 0, maxDistance: 2500 },
+            'plane (domestic)': { base: 0, maxDistance: 2500 },
+            'plane (intl)': { base: 0, maxDistance: 2500 }
+        };
+
+        // Score calculation function
+        function calculateScore(mode, distance) {
+            const modeData = transportScores[mode];
+            if (!modeData) return 0;
+
+            let score = modeData.base;
+            
+            // Apply distance-based adjustments (simplified)
+            if (distance > 50) {
+                score *= 0.8;
+            } else if (distance > 25) {
+                score *= 0.9;
+            }
+            
+            // Ensure score doesn't go below 0
+            return Math.max(0, score);
+        }
+
+        // Form submission handler
+        document.getElementById('scoreForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const mode = document.getElementById('transportMode').value;
+            const distance = parseFloat(document.getElementById('distance').value);
+            
+            if (!mode || !distance) {
+                alert('Please select a transport mode and enter a distance.');
+                return;
+            }
+            
+            if (distance < 0) {
+                alert('Distance cannot be negative.');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '🔄 Calculating...';
+            submitBtn.disabled = true;
+            
+            // Call API endpoint
+            fetch('/api/calculate-transport-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    transportMode: mode,
+                    distance: distance
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display results
+                    document.getElementById('transportScore').textContent = data.score;
+                    document.getElementById('creditsEarned').textContent = data.credits;
+                    document.getElementById('co2Saved').textContent = data.co2Saved;
+                    
+                    // Display details
+                    document.getElementById('selectedMode').textContent = data.transportMode;
+                    document.getElementById('selectedDistance').textContent = data.distance;
+                    document.getElementById('scoreMultiplier').textContent = data.score;
+                    document.getElementById('calculation').textContent = `${data.score} × ${data.distance} km = ${data.credits} credits`;
+                    document.getElementById('dataSource').textContent = data.dataSource || 'Calculated from transport scores';
+                    
+                    // Show/hide distance capping notice
+                    const distanceCappingNotice = document.getElementById('distanceCappingNotice');
+                    if (data.distanceCapped) {
+                        distanceCappingNotice.classList.remove('hidden');
+                    } else {
+                        distanceCappingNotice.classList.add('hidden');
+                    }
+                    
+                    // Show results
+                    document.getElementById('results').classList.remove('hidden');
+                    
+                    // Show log action button if credits > 0
+                    const logActionBtn = document.getElementById('logActionBtn');
+                    if (data.credits > 0) {
+                        logActionBtn.classList.remove('hidden');
+                    } else {
+                        logActionBtn.classList.add('hidden');
+                    }
+                    
+                    // Scroll to results
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    // Handle specific error cases
+                    if (data.score === 0) {
+                        // Transport mode not viable for this distance
+                        alert(`❌ ${data.message}\n\nThis transport mode cannot cover such a distance. Please choose a different transport mode or reduce the distance.`);
+                    } else {
+                        // Other errors
+                        alert('Error calculating score: ' + data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error calculating score. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Log Action Button Event Listener
+        document.getElementById('logActionBtn').addEventListener('click', function() {
+            const mode = document.getElementById('transportMode').value;
+            const distance = parseFloat(document.getElementById('distance').value);
+            
+            if (!mode || !distance) {
+                alert('Please calculate a score first before logging the action.');
+                return;
+            }
+            
+            // Show loading state
+            const btn = this;
+            const originalText = btn.textContent;
+            btn.textContent = '🔄 Logging...';
+            btn.disabled = true;
+            
+            // Call activity API
+            fetch('/api/activity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'transport',
+                    mode: mode,
+                    distanceKm: distance
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hide button and show success message
+                    btn.classList.add('hidden');
+                    document.getElementById('actionLogged').classList.remove('hidden');
+                    
+                    // Update wallet balance display if available
+                    console.log('Activity logged successfully:', data);
+                } else {
+                    alert('Error logging action: ' + (data.error || 'Unknown error'));
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error logging action. Please try again.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
+        });
+
+        // Real-time updates via WebSocket
+        const socket = io();
+        
+        socket.on('connect', () => {
+            console.log('Connected to susCoin server');
+        });
+        
+        socket.on('liveData', (data) => {
+            // Update live data if needed
+            console.log('Live data received:', data);
+        });
+    </script>
+</body>
+</html>

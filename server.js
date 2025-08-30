@@ -5,6 +5,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const { loadTable, scoreTransport } = require('./scoring');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,12 +24,100 @@ app.use(helmet({
 }));
 app.use(compression());
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+
+// Rate limiting
+const rateLimit = require('express-rate-limit');
+app.use(rateLimit({ windowMs: 60_000, max: 60 }));
+
+// Database and scoring imports
+const { db, getBalance } = require('./db');
+const { nanoid } = require('nanoid');
+
+// Demo auth: single seeded user (replace in prod)
+const DEMO_USER_ID = 'u_demo';
+
+// Static files
 app.use(express.static('public'));
 
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Load transport scoring table on startup
+loadTable().then(() => console.log('✅ transport scoring table loaded'));
+
+// API Endpoints
+
+// Create activity (transport v1)
+app.post('/api/activity', (req, res) => {
+  const { type, mode, distanceKm, evidenceUrl } = req.body || {};
+  if (type !== 'transport') return res.status(400).json({ error: 'unsupported type' });
+  if (!mode || !Number.isFinite(distanceKm)) return res.status(400).json({ error: 'mode & distanceKm required' });
+
+  const result = scoreTransport({ mode, distanceKm: Number(distanceKm) });
+
+  const id = nanoid();
+  db.serialize(()=>{
+    db.run(`INSERT INTO activities(id,user_id,type,mode,distance_km,co2e_saved_kg,score,coins,evidence_url,status)
+            VALUES(?,?,?,?,?,?,?,?,?,?)`,
+      [id, DEMO_USER_ID, 'transport', mode, result.distanceKm, result.co2eSavedKg, result.score, result.coins, evidenceUrl || null, 'verified']
+    );
+    if (result.coins > 0){
+      db.run(`INSERT INTO wallet_ledger(id,user_id,delta,reason) VALUES(?,?,?,?)`,
+        [nanoid(), DEMO_USER_ID, result.coins, `activity:${id}`]
+      );
+    }
+  });
+
+  res.json({ success:true, activityId:id, ...result });
+});
+
+// Wallet summary
+app.get('/api/wallet', async (req,res)=>{
+  const bal = await getBalance(DEMO_USER_ID);
+  db.all(`SELECT * FROM wallet_ledger WHERE user_id=? ORDER BY created_at DESC LIMIT 50`, [DEMO_USER_ID],
+    (e,rows)=> res.json({ balance: bal, ledger: rows || [] })
+  );
+});
+
+// List partner catalog (demo)
+app.get('/api/partners', (req,res)=>{
+  db.all(`SELECT id,name,catalog_json FROM partners`, [], (e,rows)=>{
+    if (e) return res.status(500).json({error:String(e)});
+    const partners = (rows||[]).map(r=> ({ id:r.id, name:r.name, catalog: JSON.parse(r.catalog_json) }));
+    res.json({ partners });
+  });
+});
+
+// Redeem an item
+app.post('/api/redeem', async (req,res)=>{
+  const { partnerId, itemId } = req.body || {};
+  if(!partnerId || !itemId) return res.status(400).json({error:'partnerId & itemId required'});
+
+  db.get(`SELECT catalog_json FROM partners WHERE id=?`, [partnerId], async (e,row)=>{
+    if (e || !row) return res.status(404).json({error:'partner not found'});
+    const catalog = JSON.parse(row.catalog_json);
+    const item = catalog.find(i=> i.id === itemId);
+    if (!item) return res.status(404).json({error:'item not found'});
+
+    const bal = await getBalance(DEMO_USER_ID);
+    if (bal < item.price_coins) return res.status(400).json({error:'insufficient balance'});
+
+    const rid = nanoid();
+    db.serialize(()=>{
+      db.run(`INSERT INTO redemptions(id,user_id,partner_id,item_id,coins,status)
+              VALUES(?,?,?,?,?,'used')`,
+        [rid, DEMO_USER_ID, partnerId, itemId, item.price_coins]
+      );
+      db.run(`INSERT INTO wallet_ledger(id,user_id,delta,reason) VALUES(?,?,?,?)`,
+        [nanoid(), DEMO_USER_ID, -item.price_coins, `redeem:${rid}`]
+      );
+    });
+
+    res.json({ success:true, redemptionId: rid, item });
+  });
+});
 
 // Mock data for real-time counters
 let liveData = {
@@ -192,6 +281,14 @@ app.get('/leaderboard', (req, res) => {
   });
 });
 
+// Score calculation page
+app.get('/score-calculation', (req, res) => {
+  res.render('score-calculation', {
+    title: 'susCoin Score Calculation - Calculate Your Transport Impact',
+    user: mockUser
+  });
+});
+
 // Connect Opal page (placeholder)
 app.get('/connect-opal', (req, res) => {
   res.render('error', {
@@ -241,6 +338,94 @@ app.post('/api/pilot-request', (req, res) => {
   const { name, email, organization, message } = req.body;
   console.log('Pilot request:', { name, email, organization, message });
   res.json({ success: true, message: 'We\'ll be in touch soon!' });
+});
+
+// API endpoint for transport score calculation
+app.post('/api/calculate-transport-score', (req, res) => {
+  const { transportMode, distance } = req.body;
+  
+  if (!transportMode || !distance) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Transport mode and distance are required' 
+    });
+  }
+  
+  if (distance < 0) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Distance cannot be negative' 
+    });
+  }
+  
+  try {
+    // Use centralized scoring logic
+    const result = scoreTransport({ mode: transportMode, distanceKm: distance });
+    
+    // Check if the score is 0 (transport mode not viable for this distance)
+    if (result.score === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `${transportMode} is not viable for ${result.distanceKm} km. This transport mode cannot cover such a distance.`,
+        transportMode,
+        distance: result.distanceKm,
+        score: 0,
+        credits: 0,
+        co2Saved: 0
+      });
+    }
+    
+    // Prepare response message
+    let message = 'Score calculated successfully';
+    if (distance > 2500) {
+      message = `Score calculated for 2500 km (maximum distance). Scores remain the same for distances beyond 2500 km.`;
+    }
+    
+    res.json({
+      success: true,
+      transportMode,
+      distance: result.distanceKm,
+      originalDistance: distance,
+      score: result.score.toFixed(2),
+      credits: result.coins,
+      co2Saved: result.co2eSavedKg,
+      message,
+      dataSource: `Centralized scoring system`,
+      distanceCapped: distance > 2500
+    });
+    
+  } catch (error) {
+    console.error('Error calculating transport score:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error calculating transport score' 
+    });
+  }
+});
+
+// API endpoint to get available transport modes and distance ranges
+app.get('/api/transport-info', (req, res) => {
+  try {
+    // Get available transport modes from the centralized scoring system
+    const transportModes = Object.keys(require('./scoring').factors_g_per_km);
+    
+    res.json({
+      success: true,
+      transportModes,
+      distanceRange: {
+        min: 0,
+        max: 2500,
+        step: 5 // Based on CSV step size
+      },
+      message: 'Transport info retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Error getting transport info:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error retrieving transport information' 
+    });
+  }
 });
 
 // Error handling

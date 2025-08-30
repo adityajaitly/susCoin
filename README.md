@@ -1,6 +1,10 @@
-# 🌍 susCoin – Gamified Carbon Credits for Cities & Gig Workers
+# susCoin
 
-susCoin is a web app that turns sustainable actions into carbon credits—making climate impact fun, transparent, and inclusive.
+**susCoin:** a city rewards layer that turns verified low-carbon actions into redeemable coins.
+
+**how it works:** record → verify → reward → redeem; dashboards show CO₂e avoided & local spend.
+
+**why it matters:** shrinks carbon footprints while boosting the local economy.
 
 ## 🚀 Quick Start
 
@@ -14,13 +18,8 @@ susCoin is a web app that turns sustainable actions into carbon credits—making
 git clone <your-repo-url>
 cd susCoin
 
-# Install dependencies
-npm install
-
-# Build CSS
-npm run build
-
-# Start development server
+# Install dependencies and start development server
+npm i
 npm run dev
 ```
 
