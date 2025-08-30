@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>susCoin - Sign In or Create Profile</title>
+    <meta name="description" content="Join susCoin to start earning credits for your climate impact">
+    
+    <!-- Tailwind CSS -->
+    <link href="/styles/output.css" rel="stylesheet">
+    
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="bg-sus-bg text-sus-text font-sans antialiased min-h-screen">
+    <!-- Header -->
+    <header class="bg-sus-card border-b border-sus-line">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-sus-primary">🌍 susCoin</a>
+                </div>
+                <div class="text-sm text-sus-muted">
+                    <a href="/" class="hover:text-sus-text transition-colors">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-sus-text mb-2">Welcome to susCoin</h1>
+                <p class="text-sus-muted">Start earning credits for your climate impact</p>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div class="flex bg-sus-line rounded-lg p-1 mb-8">
+                <button id="signinTab" class="flex-1 py-2 px-4 rounded-md bg-sus-primary text-white font-medium transition-all" onclick="switchTab('signin')">
+                    Sign In
+                </button>
+                <button id="signupTab" class="flex-1 py-2 px-4 rounded-md text-sus-muted hover:text-sus-text font-medium transition-all" onclick="switchTab('signup')">
+                    Create Profile
+                </button>
+            </div>
+
+            <!-- Sign In Form -->
+            <div id="signinForm" class="space-y-6">
+                <form class="space-y-4" onsubmit="handleSignIn(event)">
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Email or Username</label>
+                        <input type="text" id="signinEmail" required 
+                               class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                               placeholder="Enter your email or username">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Password</label>
+                        <input type="password" id="signinPassword" required 
+                               class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                               placeholder="Enter your password">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-sus-line text-sus-primary focus:ring-sus-primary">
+                            <span class="ml-2 text-sm text-sus-muted">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-sus-primary hover:underline">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn-primary w-full">
+                        Sign In
+                    </button>
+                </form>
+                
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-sus-line"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-sus-bg text-sus-muted">Or continue with</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="flex items-center justify-center px-4 py-2 border border-sus-line rounded-lg bg-sus-card hover:bg-sus-line/50 transition-colors">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    </button>
+                    <button class="flex items-center justify-center px-4 py-2 border border-sus-line rounded-lg bg-sus-card hover:bg-sus-line/50 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                        </svg>
+                        Twitter
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Admin Login Section -->
+            <div class="mt-8 pt-6 border-t border-sus-line">
+                <div class="text-center mb-4">
+                    <span class="text-sm text-sus-muted font-medium">🔐 Admin Access</span>
+                    <p class="text-xs text-sus-muted mt-1">Use admin credentials to access admin features</p>
+                </div>
+                <form class="space-y-4" onsubmit="handleAdminLogin(event)" novalidate>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Admin Username</label>
+                        <input type="text" id="adminUsername" required 
+                               class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                               placeholder="Enter admin username (e.g., admin)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Admin Password</label>
+                        <input type="password" id="adminPassword" required 
+                               class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                               placeholder="Enter admin password">
+                    </div>
+                    <button type="submit" class="btn-secondary w-full">
+                        🔐 Admin Login
+                    </button>
+                </form>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="space-y-6" style="display: none;">
+                <form class="space-y-4" onsubmit="handleSignUp(event)">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-sus-muted mb-2">First Name</label>
+                            <input type="text" id="signupFirstName" required 
+                                   class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                                   placeholder="First name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-sus-muted mb-2">Last Name</label>
+                            <input type="text" id="signupLastName" required 
+                                   class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                                   placeholder="Last name">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Email</label>
+                        <input type="email" id="signupEmail" required 
+                               class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                               placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Password</label>
+                        <input type="password" id="signupPassword" required 
+                               class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent"
+                               placeholder="Create a password">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">City</label>
+                        <select id="signupCity" required 
+                                class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent">
+                            <option value="">Select your city</option>
+                            <option value="sydney">Sydney</option>
+                            <option value="melbourne">Melbourne</option>
+                            <option value="brisbane">Brisbane</option>
+                            <option value="perth">Perth</option>
+                            <option value="adelaide">Adelaide</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Gig Type</label>
+                        <select id="signupGigType" required 
+                                class="w-full p-3 border border-sus-line rounded-lg bg-sus-card focus:ring-2 focus:ring-sus-primary focus:border-transparent">
+                            <option value="">Select your gig type</option>
+                            <option value="delivery">Food Delivery</option>
+                            <option value="rideshare">Rideshare</option>
+                            <option value="freelance">Freelance Services</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="signupTerms" required 
+                               class="rounded border-sus-line text-sus-primary focus:ring-sus-primary">
+                        <label for="signupTerms" class="ml-2 text-sm text-sus-muted">
+                            I agree to the <a href="#" class="text-sus-primary hover:underline">Terms of Service</a> and 
+                            <a href="#" class="text-sus-primary hover:underline">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary w-full">
+                        Create Profile
+                    </button>
+                </form>
+                
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-sus-line"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-sus-bg text-sus-muted">Or sign up with</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="flex items-center justify-center px-4 py-2 border border-sus-line rounded-lg bg-sus-card hover:bg-sus-line/50 transition-colors">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    </button>
+                    <button class="flex items-center justify-center px-4 py-2 border border-sus-line rounded-lg bg-sus-card hover:bg-sus-line/50 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                        </svg>
+                        Twitter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="card mt-8">
+                <h3 class="font-semibold mb-4">🎁 What you'll get:</h3>
+                <div class="space-y-3 text-sm text-sus-muted">
+                    <div class="flex items-center space-x-2">
+                        <div class="text-sus-primary">✓</div>
+                        <span>Earn susCoins for sustainable actions</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-sus-primary">✓</div>
+                        <span>Track your carbon impact in real-time</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-sus-primary">✓</div>
+                        <span>Redeem rewards for food, transport & more</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-sus-primary">✓</div>
+                        <span>Compete on city leaderboards</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-sus-primary">✓</div>
+                        <span>Join a community of climate champions</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Test Section (for debugging) -->
+            <div class="card mt-4">
+                <h3 class="font-semibold mb-4">🔧 Debug Info:</h3>
+                <div class="space-y-2 text-sm text-sus-muted">
+                    <div>Server Status: <span id="serverStatus" class="text-sus-success">Connected</span></div>
+                    <div>Socket.IO: <span id="socketStatus" class="text-sus-success">Connected</span></div>
+                    <button onclick="testRedirect()" class="btn-secondary text-sm">Test Redirect to Dashboard</button>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-sus-line">
+                    <h4 class="font-medium mb-2">🔐 Admin Credentials:</h4>
+                    <div class="space-y-1 text-xs">
+                        <div><strong>Admin:</strong> username: <code>admin</code>, password: <code>admin123</code></div>
+                        <div><strong>Demo:</strong> username: <code>demo</code>, password: <code>demo123</code></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-20 right-4 z-50 hidden">
+        <div class="bg-sus-success text-white px-6 py-4 rounded-lg shadow-lg">
+            <div id="toastMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Check Socket.IO connection
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO connection error:', error);
+        });
+        
+        function switchTab(tab) {
+            const signinTab = document.getElementById('signinTab');
+            const signupTab = document.getElementById('signupTab');
+            const signinForm = document.getElementById('signinForm');
+            const signupForm = document.getElementById('signupForm');
+            
+            if (tab === 'signin') {
+                signinTab.className = 'flex-1 py-2 px-4 rounded-md bg-sus-primary text-white font-medium transition-all';
+                signupTab.className = 'flex-1 py-2 px-4 rounded-md text-sus-muted hover:text-sus-text font-medium transition-all';
+                signinForm.style.display = 'block';
+                signupForm.style.display = 'none';
+            } else {
+                signupTab.className = 'flex-1 py-2 px-4 rounded-md bg-sus-primary text-white font-medium transition-all';
+                signinTab.className = 'flex-1 py-2 px-4 rounded-md text-sus-muted hover:text-sus-text font-medium transition-all';
+                signupForm.style.display = 'block';
+                signinForm.style.display = 'none';
+            }
+        }
+        
+        function handleSignIn(event) {
+            event.preventDefault();
+            console.log('Sign in form submitted');
+            
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+            
+            console.log('Sign in attempt:', { email, password });
+            
+            // Show loading state
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Signing In...';
+            submitBtn.disabled = true;
+            
+            // For demo purposes, redirect to dashboard
+            showToast('Welcome back! Redirecting to your dashboard...');
+            
+            // Track analytics (with error handling)
+            try {
+                socket.emit('analytics', { 
+                    event: 'sign_in_attempt', 
+                    data: { email: email } 
+                });
+            } catch (error) {
+                console.log('Analytics tracking failed:', error);
+            }
+            
+            setTimeout(() => {
+                console.log('Redirecting to dashboard...');
+                window.location.href = '/dashboard';
+            }, 1500);
+        }
+        
+        function handleSignUp(event) {
+            event.preventDefault();
+            console.log('Sign up form submitted');
+            
+            const formData = {
+                firstName: document.getElementById('signupFirstName').value,
+                lastName: document.getElementById('signupLastName').value,
+                email: document.getElementById('signupEmail').value,
+                password: document.getElementById('signupPassword').value,
+                city: document.getElementById('signupCity').value,
+                gigType: document.getElementById('signupGigType').value
+            };
+            
+            console.log('Sign up attempt:', formData);
+            
+            // Show loading state
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Creating Profile...';
+            submitBtn.disabled = true;
+            
+            // For demo purposes, redirect to dashboard
+            showToast('Profile created! Welcome to susCoin!');
+            
+            // Track analytics (with error handling)
+            try {
+                socket.emit('analytics', { 
+                    event: 'sign_up_attempt', 
+                    data: { 
+                        email: formData.email,
+                        city: formData.city,
+                        gigType: formData.gigType
+                    } 
+                });
+            } catch (error) {
+                console.log('Analytics tracking failed:', error);
+            }
+            
+            setTimeout(() => {
+                console.log('Redirecting to dashboard...');
+                window.location.href = '/dashboard';
+            }, 1500);
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+        
+        function testRedirect() {
+            console.log('Testing redirect...');
+            showToast('Testing redirect to dashboard...');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+        }
+        
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            console.log('Admin login form submitted');
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            console.log('Admin login attempt:', { username, password });
+            
+            // Show loading state
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '🔐 Authenticating...';
+            submitBtn.disabled = true;
+            
+            // Send admin login request
+            fetch('/api/admin-login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`Welcome ${data.user.username}! Redirecting to admin dashboard...`);
+                    
+                    // Track analytics
+                    try {
+                        socket.emit('analytics', { 
+                            event: 'admin_login_success', 
+                            data: { username: username } 
+                        });
+                    } catch (error) {
+                        console.log('Analytics tracking failed:', error);
+                    }
+                    
+                    setTimeout(() => {
+                        console.log('Redirecting to admin dashboard...');
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    showToast(`❌ ${data.message}`, 'error');
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Admin login error:', error);
+                showToast('❌ Login failed. Please try again.', 'error');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+        
+        // Track page view
+        try {
+            socket.emit('analytics', { event: 'page_view', data: { page: 'auth' } });
+        } catch (error) {
+            console.log('Analytics tracking failed:', error);
+        }
+    </script>
+</body>
+</html>
