@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* susCoin Custom CSS Variables */
+:root {
+  --bg: #F6F8FA;
+  --card: #FFFFFF;
+  --text: #0B1220;
+  --muted: #64748B;
+  --primary: #065F46;
+  --secondary: #1D4ED8;
+  --accent: #A3E635;
+  --line: #E5E7EB;
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #0891B2;
+  --data-1: #0072B2;
+  --data-2: #E69F00;
+  --data-3: #009E73;
+  --data-4: #F0E442;
+  --data-5: #56B4E9;
+  --data-6: #D55E00;
+  --data-7: #CC79A7;
+  --data-8: #000000;
+}
+
+/* Dark theme override */
+.dark {
+  --bg: #0F172A;
+  --card: #111827;
+  --text: #F3F4F6;
+  --muted: #9CA3AF;
+  --primary: #22C55E;
+  --secondary: #60A5FA;
+  --accent: #BEF264;
+  --line: #1F2937;
+}
+
+/* Custom component styles */
+@layer components {
+  .btn-primary {
+    @apply bg-sus-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-sus-primary focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-sus-secondary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-sus-secondary focus:ring-offset-2;
+  }
+  
+  .btn-accent {
+    @apply bg-sus-accent text-sus-text px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-sus-accent focus:ring-offset-2;
+  }
+  
+  .card {
+    @apply bg-sus-card border border-sus-line rounded-xl p-6 shadow-sm;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-sus-success text-white;
+  }
+  
+  .badge-warning {
+    @apply bg-sus-warning text-sus-text;
+  }
+  
+  .badge-error {
+    @apply bg-sus-error text-white;
+  }
+  
+  .badge-info {
+    @apply bg-sus-info text-white;
+  }
+  
+  .badge-accent {
+    @apply bg-sus-accent text-sus-text;
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, var(--bg) 0%, var(--card) 100%);
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/80 dark:bg-sus-dark-card/80 border border-white/20;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for better accessibility */
+.focus-visible:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

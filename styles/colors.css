@@ -1,0 +1,192 @@
+/* susCoin Color Palette - Tech Meets Climate */
+
+/* CSS Custom Properties for Light Theme */
+:root {
+  /* Base Colors */
+  --bg: #F6F8FA;
+  --card: #FFFFFF;
+  --text: #0B1220;
+  --muted: #64748B;
+  
+  /* Primary Colors */
+  --primary: #065F46;
+  --secondary: #1D4ED8;
+  --accent: #A3E635;
+  --line: #E5E7EB;
+  
+  /* State Colors */
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #0891B2;
+  
+  /* Data Visualization Colors (Colorblind Safe) */
+  --data-1: #0072B2;
+  --data-2: #E69F00;
+  --data-3: #009E73;
+  --data-4: #F0E442;
+  --data-5: #56B4E9;
+  --data-6: #D55E00;
+  --data-7: #CC79A7;
+  --data-8: #000000;
+}
+
+/* Dark Theme Override */
+[data-theme="dark"] {
+  --bg: #0F172A;
+  --card: #111827;
+  --text: #F3F4F6;
+  --muted: #9CA3AF;
+  --primary: #22C55E;
+  --secondary: #60A5FA;
+  --accent: #BEF264;
+  --line: #1F2937;
+}
+
+/* Utility Classes */
+.bg-primary { background-color: var(--primary); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-accent { background-color: var(--accent); }
+.bg-success { background-color: var(--success); }
+.bg-warning { background-color: var(--warning); }
+.bg-error { background-color: var(--error); }
+.bg-info { background-color: var(--info); }
+
+.text-primary { color: var(--text); }
+.text-muted { color: var(--muted); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-error { color: var(--error); }
+.text-info { color: var(--info); }
+
+.border-primary { border-color: var(--primary); }
+.border-secondary { border-color: var(--secondary); }
+.border-accent { border-color: var(--accent); }
+.border-line { border-color: var(--line); }
+
+/* Button Styles */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-secondary:hover {
+  opacity: 0.9;
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--text);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-accent:hover {
+  opacity: 0.9;
+}
+
+/* Card Styles */
+.card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: var(--success);
+  color: white;
+}
+
+.badge-warning {
+  background-color: var(--warning);
+  color: var(--text);
+}
+
+.badge-error {
+  background-color: var(--error);
+  color: white;
+}
+
+.badge-info {
+  background-color: var(--info);
+  color: white;
+}
+
+.badge-accent {
+  background-color: var(--accent);
+  color: var(--text);
+}
+
+/* Data Visualization Colors */
+.chart-color-1 { color: var(--data-1); }
+.chart-color-2 { color: var(--data-2); }
+.chart-color-3 { color: var(--data-3); }
+.chart-color-4 { color: var(--data-4); }
+.chart-color-5 { color: var(--data-5); }
+.chart-color-6 { color: var(--data-6); }
+.chart-color-7 { color: var(--data-7); }
+.chart-color-8 { color: var(--data-8); }
+
+/* Theme Toggle */
+.theme-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+/* Responsive Design */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F172A;
+    --card: #111827;
+    --text: #F3F4F6;
+    --muted: #9CA3AF;
+    --primary: #22C55E;
+    --secondary: #60A5FA;
+    --accent: #BEF264;
+    --line: #1F2937;
+  }
+}
