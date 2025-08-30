@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <meta name="description" content="Join susCoin - Turn gig work into citywide carbon wins">
+    
+    <!-- Tailwind CSS -->
+    <link href="/styles/output.css" rel="stylesheet">
+    
+    <!-- Confetti library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body class="bg-sus-bg text-sus-text font-sans antialiased min-h-screen">
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="fixed top-4 right-4 z-50 p-3 bg-sus-card border border-sus-line rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-2xl hover:scale-110 cursor-pointer" title="Toggle dark mode">
+        🌙
+    </button>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-40 bg-sus-card/80 backdrop-blur-md border-b border-sus-line">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <img src="/images/logo.png" alt="susCoin Logo" class="h-10 w-auto mr-2 logo">
+                        <span class="text-2xl font-bold text-sus-primary">susCoin</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-sus-muted hover:text-sus-text transition-colors">Home</a>
+                    <a href="/login" class="text-sus-muted hover:text-sus-text transition-colors">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center pt-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-sus-primary rounded-full flex items-center justify-center mb-4">
+                    <span class="text-2xl">🚀</span>
+                </div>
+                <h2 class="text-3xl font-bold text-sus-text mb-2">Join susCoin</h2>
+                <p class="text-sus-muted">Start earning credits for your climate impact</p>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="card">
+                <form id="signupForm" class="space-y-6">
+                    <!-- Full Name Field -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-sus-text mb-2">
+                            Full name
+                        </label>
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            required
+                            class="input-field w-full"
+                            placeholder="Enter your full name"
+                        >
+                    </div>
+
+                    <!-- Email Field -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-sus-text mb-2">
+                            Email address
+                        </label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            class="input-field w-full"
+                            placeholder="Enter your email"
+                        >
+                    </div>
+
+                    <!-- Occupation Field -->
+                    <div>
+                        <label for="occupation" class="block text-sm font-medium text-sus-text mb-2">
+                            Occupation
+                        </label>
+                        <select
+                            id="occupation"
+                            name="occupation"
+                            required
+                            class="input-field w-full"
+                        >
+                            <option value="">Select your occupation</option>
+                            <option value="student">Student</option>
+                            <option value="professional">Professional</option>
+                        </select>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-sus-text mb-2">
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            required
+                            class="input-field w-full"
+                            placeholder="Create a password"
+                            minlength="8"
+                        >
+                        <p class="text-xs text-sus-muted mt-1">Must be at least 8 characters long</p>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-sus-text mb-2">
+                            Confirm password
+                        </label>
+                        <input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            required
+                            class="input-field w-full"
+                            placeholder="Confirm your password"
+                        >
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="flex items-start">
+                        <input
+                            id="terms"
+                            name="terms"
+                            type="checkbox"
+                            required
+                            class="h-4 w-4 text-sus-primary focus:ring-sus-primary border-sus-line rounded mt-1"
+                        >
+                        <label for="terms" class="ml-2 block text-sm text-sus-muted">
+                            I agree to the 
+                            <a href="#" class="text-sus-primary hover:text-sus-primary-dark transition-colors">Terms of Service</a>
+                            and 
+                            <a href="#" class="text-sus-primary hover:text-sus-primary-dark transition-colors">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <!-- Newsletter Subscription -->
+                    <div class="flex items-start">
+                        <input
+                            id="newsletter"
+                            name="newsletter"
+                            type="checkbox"
+                            class="h-4 w-4 text-sus-primary focus:ring-sus-primary border-sus-line rounded mt-1"
+                        >
+                        <label for="newsletter" class="ml-2 block text-sm text-sus-muted">
+                            Subscribe to our newsletter for updates and tips on earning more credits
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button
+                        type="submit"
+                        class="btn-primary w-full py-3 text-lg"
+                        id="signupBtn"
+                    >
+                        <span id="signupBtnText">Create account</span>
+                        <span id="signupBtnLoading" class="hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Creating account...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-sus-line"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-sus-card text-sus-muted">Or continue with</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Signup Buttons -->
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <button class="btn-secondary w-full py-3">
+                        <span class="text-lg mr-2">🔍</span>
+                        Google
+                    </button>
+                    <button class="btn-secondary w-full py-3">
+                        <span class="text-lg mr-2">📘</span>
+                        Facebook
+                    </button>
+                </div>
+
+                <!-- Login Link -->
+                <div class="mt-6 text-center">
+                    <p class="text-sus-muted">
+                        Already have an account? 
+                        <a href="/login" class="text-sus-primary hover:text-sus-primary-dark transition-colors font-medium">
+                            Sign in
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="card bg-sus-primary/10 border-sus-primary/20">
+                <div class="text-center">
+                    <h3 class="text-lg font-semibold text-sus-primary mb-4">🌱 Why Join susCoin?</h3>
+                    <div class="space-y-3 text-sm text-sus-muted">
+                        <div class="flex items-center justify-center">
+                            <span class="mr-2">✅</span>
+                            Earn credits for sustainable actions
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <span class="mr-2">✅</span>
+                            Redeem rewards from local partners
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <span class="mr-2">✅</span>
+                            Track your climate impact
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <span class="mr-2">✅</span>
+                            Join a community of eco-conscious workers
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="card max-w-md mx-4 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold text-sus-text mb-2">Welcome to susCoin!</h3>
+            <p class="text-sus-muted mb-6">Your account has been created successfully. Start earning credits for your climate impact!</p>
+            <button onclick="redirectToDashboard()" class="btn-primary w-full">
+                Go to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Message Modal -->
+    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="card max-w-md mx-4 text-center">
+            <div class="text-6xl mb-4">❌</div>
+            <h3 class="text-xl font-bold text-sus-text mb-2">Signup Failed</h3>
+            <p id="errorMessage" class="text-sus-muted mb-6">An error occurred during signup.</p>
+            <button onclick="closeErrorModal()" class="btn-primary w-full">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to 'light'
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        html.classList.toggle('dark', currentTheme === 'dark');
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            themeToggle.textContent = isDark ? '☀️' : '🌙';
+        });
+
+        // Form handling
+        const signupForm = document.getElementById('signupForm');
+        const signupBtn = document.getElementById('signupBtn');
+        const signupBtnText = document.getElementById('signupBtnText');
+        const signupBtnLoading = document.getElementById('signupBtnLoading');
+
+        // Password validation
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+
+        function validatePasswords() {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Passwords do not match');
+            } else {
+                confirmPassword.setCustomValidity('');
+            }
+        }
+
+        password.addEventListener('change', validatePasswords);
+        confirmPassword.addEventListener('keyup', validatePasswords);
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(signupForm);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const occupation = formData.get('occupation');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+            const terms = formData.get('terms');
+            const newsletter = formData.get('newsletter');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showError('Passwords do not match. Please try again.');
+                return;
+            }
+
+            // Validate password length
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long.');
+                return;
+            }
+
+            // Validate terms acceptance
+            if (!terms) {
+                showError('You must accept the Terms of Service and Privacy Policy.');
+                return;
+            }
+
+            // Show loading state
+            signupBtn.disabled = true;
+            signupBtnText.classList.add('hidden');
+            signupBtnLoading.classList.remove('hidden');
+
+            try {
+                console.log('Sending signup request:', { name, email, occupation, newsletter: !!newsletter });
+                
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        occupation,
+                        password,
+                        newsletter: !!newsletter
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.success) {
+                    // Show success modal with confetti
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                    
+                    document.getElementById('successModal').classList.remove('hidden');
+                } else {
+                    showError(data.message || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                // Reset loading state
+                signupBtn.disabled = false;
+                signupBtnText.classList.remove('hidden');
+                signupBtnLoading.classList.add('hidden');
+            }
+        });
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorModal').classList.remove('hidden');
+        }
+
+        function closeErrorModal() {
+            document.getElementById('errorModal').classList.add('hidden');
+        }
+
+        function redirectToDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('successModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                e.target.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('errorModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeErrorModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -8,8 +8,12 @@ db.serialize(() => {
 
   db.run(`CREATE TABLE IF NOT EXISTS users(
     id TEXT PRIMARY KEY,
-    name TEXT,
-    email TEXT
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    occupation TEXT CHECK(occupation IN ('student', 'professional')) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_login DATETIME
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS activities(

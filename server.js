@@ -5,7 +5,9 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 const { loadTable, scoreTransport } = require('./scoring');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +27,7 @@ app.use(helmet({
 app.use(compression());
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
 
 // Rate limiting
 const rateLimit = require('express-rate-limit');
@@ -37,6 +40,9 @@ const { nanoid } = require('nanoid');
 // Demo auth: single seeded user (replace in prod)
 const DEMO_USER_ID = 'u_demo';
 
+// Session management (simple in-memory for demo - use Redis in production)
+const sessions = new Map();
+
 // Static files
 app.use(express.static('public'));
 
@@ -47,10 +53,57 @@ app.set('views', path.join(__dirname, 'views'));
 // Load transport scoring table on startup
 loadTable().then(() => console.log('✅ transport scoring table loaded'));
 
+// Create demo user if it doesn't exist
+async function createDemoUser() {
+  try {
+    const demoEmail = 'demo@suscoin.com';
+    const demoPassword = 'demo123';
+    const passwordHash = await bcrypt.hash(demoPassword, 12);
+    
+    db.get('SELECT id FROM users WHERE email = ?', [demoEmail], (err, row) => {
+      if (err) {
+        console.error('Error checking demo user:', err);
+        return;
+      }
+      
+      if (!row) {
+        db.run(
+          'INSERT INTO users (id, name, email, password_hash, occupation) VALUES (?, ?, ?, ?, ?)',
+          [DEMO_USER_ID, 'Demo User', demoEmail, passwordHash, 'professional'],
+          function(err) {
+            if (err) {
+              console.error('Error creating demo user:', err);
+            } else {
+              console.log('✅ Demo user created (email: demo@suscoin.com, password: demo123)');
+              
+              // Create initial wallet entry for demo user
+              db.run(
+                'INSERT INTO wallet_ledger (id, user_id, delta, reason) VALUES (?, ?, ?, ?)',
+                [nanoid(), DEMO_USER_ID, 100, 'demo_welcome_bonus'],
+                function(err) {
+                  if (err) {
+                    console.error('Error creating demo welcome bonus:', err);
+                  }
+                }
+              );
+            }
+          }
+        );
+      } else {
+        console.log('✅ Demo user already exists');
+      }
+    });
+  } catch (error) {
+    console.error('Error in createDemoUser:', error);
+  }
+}
+
+createDemoUser();
+
 // API Endpoints
 
 // Create activity (transport v1)
-app.post('/api/activity', (req, res) => {
+app.post('/api/activity', requireAuth, (req, res) => {
   const { type, mode, distanceKm, evidenceUrl } = req.body || {};
   if (type !== 'transport') return res.status(400).json({ error: 'unsupported type' });
   if (!mode || !Number.isFinite(distanceKm)) return res.status(400).json({ error: 'mode & distanceKm required' });
@@ -61,11 +114,11 @@ app.post('/api/activity', (req, res) => {
   db.serialize(()=>{
     db.run(`INSERT INTO activities(id,user_id,type,mode,distance_km,co2e_saved_kg,score,coins,evidence_url,status)
             VALUES(?,?,?,?,?,?,?,?,?,?)`,
-      [id, DEMO_USER_ID, 'transport', mode, result.distanceKm, result.co2eSavedKg, result.score, result.coins, evidenceUrl || null, 'verified']
+      [id, req.user.userId, 'transport', mode, result.distanceKm, result.co2eSavedKg, result.score, result.coins, evidenceUrl || null, 'verified']
     );
     if (result.coins > 0){
       db.run(`INSERT INTO wallet_ledger(id,user_id,delta,reason) VALUES(?,?,?,?)`,
-        [nanoid(), DEMO_USER_ID, result.coins, `activity:${id}`]
+        [nanoid(), req.user.userId, result.coins, `activity:${id}`]
       );
     }
   });
@@ -74,9 +127,9 @@ app.post('/api/activity', (req, res) => {
 });
 
 // Wallet summary
-app.get('/api/wallet', async (req,res)=>{
-  const bal = await getBalance(DEMO_USER_ID);
-  db.all(`SELECT * FROM wallet_ledger WHERE user_id=? ORDER BY created_at DESC LIMIT 50`, [DEMO_USER_ID],
+app.get('/api/wallet', requireAuth, async (req,res)=>{
+  const bal = await getBalance(req.user.userId);
+  db.all(`SELECT * FROM wallet_ledger WHERE user_id=? ORDER BY created_at DESC LIMIT 50`, [req.user.userId],
     (e,rows)=> res.json({ balance: bal, ledger: rows || [] })
   );
 });
@@ -91,7 +144,7 @@ app.get('/api/partners', (req,res)=>{
 });
 
 // Redeem an item
-app.post('/api/redeem', async (req,res)=>{
+app.post('/api/redeem', requireAuth, async (req,res)=>{
   const { partnerId, itemId } = req.body || {};
   if(!partnerId || !itemId) return res.status(400).json({error:'partnerId & itemId required'});
 
@@ -101,17 +154,17 @@ app.post('/api/redeem', async (req,res)=>{
     const item = catalog.find(i=> i.id === itemId);
     if (!item) return res.status(404).json({error:'item not found'});
 
-    const bal = await getBalance(DEMO_USER_ID);
+    const bal = await getBalance(req.user.userId);
     if (bal < item.price_coins) return res.status(400).json({error:'insufficient balance'});
 
     const rid = nanoid();
     db.serialize(()=>{
       db.run(`INSERT INTO redemptions(id,user_id,partner_id,item_id,coins,status)
               VALUES(?,?,?,?,?,'used')`,
-        [rid, DEMO_USER_ID, partnerId, itemId, item.price_coins]
+        [rid, req.user.userId, partnerId, itemId, item.price_coins]
       );
       db.run(`INSERT INTO wallet_ledger(id,user_id,delta,reason) VALUES(?,?,?,?)`,
-        [nanoid(), DEMO_USER_ID, -item.price_coins, `redeem:${rid}`]
+        [nanoid(), req.user.userId, -item.price_coins, `redeem:${rid}`]
       );
     });
 
@@ -233,43 +286,87 @@ io.on('connection', (socket) => {
   });
 });
 
-// Routes
+
+
+// Authentication middleware for protected routes
+function requireAuth(req, res, next) {
+  const user = getCurrentUser(req);
+  if (!user) {
+    // Check if it's an API request
+    if (req.path.startsWith('/api/')) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Authentication required' 
+      });
+    }
+    // For page requests, redirect to login
+    return res.redirect('/login');
+  }
+  req.user = user;
+  next();
+}
+
+// Public routes (no authentication required)
 app.get('/', (req, res) => {
+  const user = getCurrentUser(req);
   res.render('home', {
     title: 'susCoin - Turn gig work into citywide carbon wins',
-    liveData: liveData
+    liveData: liveData,
+    user: user
   });
 });
 
-// User dashboard
-app.get('/dashboard', (req, res) => {
+app.get('/login', (req, res) => {
+  // If user is already logged in, redirect to dashboard
+  const user = getCurrentUser(req);
+  if (user) {
+    return res.redirect('/dashboard');
+  }
+  res.render('login', {
+    title: 'Login - susCoin'
+  });
+});
+
+app.get('/signup', (req, res) => {
+  // If user is already logged in, redirect to dashboard
+  const user = getCurrentUser(req);
+  if (user) {
+    return res.redirect('/dashboard');
+  }
+  res.render('signup', {
+    title: 'Sign Up - susCoin'
+  });
+});
+
+// Protected routes (authentication required)
+app.get('/dashboard', requireAuth, (req, res) => {
   res.render('dashboard', {
     title: 'susCoin Dashboard - Your Climate Impact',
-    user: mockUser
+    user: req.user
   });
 });
 
 // User wallet
-app.get('/wallet', (req, res) => {
+app.get('/wallet', requireAuth, (req, res) => {
   res.render('wallet', {
     title: 'susCoin Wallet - Your Balance & Transactions',
-    user: mockUser
+    user: req.user
   });
 });
 
 // Redemption page
-app.get('/redeem', (req, res) => {
+app.get('/redeem', requireAuth, (req, res) => {
   res.render('redeem', {
     title: 'susCoin Redeem - Use Your Credits',
-    user: mockUser
+    user: req.user
   });
 });
 
 // Carbon calculator
-app.get('/calculator', (req, res) => {
+app.get('/calculator', requireAuth, (req, res) => {
   res.render('calculator', {
     title: 'susCoin Carbon Calculator - Calculate Your Impact',
-    user: mockUser
+    user: req.user
   });
 });
 
@@ -282,10 +379,10 @@ app.get('/leaderboard', (req, res) => {
 });
 
 // Score calculation page
-app.get('/score-calculation', (req, res) => {
+app.get('/score-calculation', requireAuth, (req, res) => {
   res.render('score-calculation', {
     title: 'susCoin Score Calculation - Calculate Your Transport Impact',
-    user: mockUser
+    user: req.user
   });
 });
 
@@ -328,11 +425,206 @@ app.post('/api/demo-scan', (req, res) => {
   });
 });
 
-app.post('/api/signup', (req, res) => {
-  const { email, type } = req.body;
-  console.log('Signup request:', { email, type });
-  res.json({ success: true, message: 'Welcome to susCoin!' });
+// Authentication routes
+app.post('/api/signup', async (req, res) => {
+  const { name, email, occupation, password, newsletter } = req.body;
+  
+  if (!name || !email || !occupation || !password) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'All required fields must be provided' 
+    });
+  }
+
+  if (!['student', 'professional'].includes(occupation)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Invalid occupation. Must be either "student" or "professional"' 
+    });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Password must be at least 8 characters long' 
+    });
+  }
+
+  try {
+    // Check if user already exists
+    db.get('SELECT id FROM users WHERE email = ?', [email], async (err, row) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Database error occurred' 
+        });
+      }
+
+      if (row) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'User with this email already exists' 
+        });
+      }
+
+      // Hash password
+      const saltRounds = 12;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
+      // Create user
+      const userId = nanoid();
+      db.run(
+        'INSERT INTO users (id, name, email, password_hash, occupation) VALUES (?, ?, ?, ?, ?)',
+        [userId, name, email, passwordHash, occupation],
+        function(err) {
+          if (err) {
+            console.error('Error creating user:', err);
+            return res.status(500).json({ 
+              success: false, 
+              message: 'Error creating user account' 
+            });
+          }
+
+          // Create initial wallet entry
+          db.run(
+            'INSERT INTO wallet_ledger (id, user_id, delta, reason) VALUES (?, ?, ?, ?)',
+            [nanoid(), userId, 50, 'welcome_bonus'],
+            function(err) {
+              if (err) {
+                console.error('Error creating welcome bonus:', err);
+              }
+              
+              res.json({ 
+                success: true, 
+                message: 'Account created successfully! Welcome to susCoin!',
+                userId: userId
+              });
+            }
+          );
+        }
+      );
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error occurred' 
+    });
+  }
 });
+
+app.post('/api/login', async (req, res) => {
+  const { email, password, rememberMe } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Email and password are required' 
+    });
+  }
+
+  try {
+    db.get(
+      'SELECT id, name, email, password_hash, occupation FROM users WHERE email = ?',
+      [email],
+      async (err, user) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ 
+            success: false, 
+            message: 'Database error occurred' 
+          });
+        }
+
+        if (!user) {
+          return res.status(401).json({ 
+            success: false, 
+            message: 'Invalid email or password' 
+          });
+        }
+
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        if (!isValidPassword) {
+          return res.status(401).json({ 
+            success: false, 
+            message: 'Invalid email or password' 
+          });
+        }
+
+        // Update last login
+        db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+
+        // Create session
+        const sessionId = nanoid();
+        const sessionData = {
+          userId: user.id,
+          email: user.email,
+          name: user.name,
+          occupation: user.occupation,
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)) // 30 days or 1 day
+        };
+        sessions.set(sessionId, sessionData);
+
+        // Set session cookie
+        res.cookie('sessionId', sessionId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
+          sameSite: 'strict'
+        });
+
+        res.json({ 
+          success: true, 
+          message: 'Login successful!',
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            occupation: user.occupation
+          }
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error occurred' 
+    });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  const sessionId = req.cookies.sessionId;
+  
+  if (sessionId && sessions.has(sessionId)) {
+    sessions.delete(sessionId);
+  }
+  
+  res.clearCookie('sessionId');
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// Middleware to get current user
+function getCurrentUser(req) {
+  const sessionId = req.cookies.sessionId;
+  if (!sessionId || !sessions.has(sessionId)) {
+    return null;
+  }
+  
+  const session = sessions.get(sessionId);
+  if (session.expiresAt < new Date()) {
+    sessions.delete(sessionId);
+    return null;
+  }
+  
+  return session;
+}
+
+
 
 app.post('/api/pilot-request', (req, res) => {
   const { name, email, organization, message } = req.body;
@@ -341,7 +633,7 @@ app.post('/api/pilot-request', (req, res) => {
 });
 
 // API endpoint for transport score calculation
-app.post('/api/calculate-transport-score', (req, res) => {
+app.post('/api/calculate-transport-score', requireAuth, (req, res) => {
   const { transportMode, distance } = req.body;
   
   if (!transportMode || !distance) {

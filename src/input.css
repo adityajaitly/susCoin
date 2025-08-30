@@ -94,6 +94,10 @@
     @apply bg-sus-card border border-sus-line rounded-xl p-6 shadow-sm;
   }
   
+  .input-field {
+    @apply w-full px-4 py-3 border border-sus-line rounded-lg bg-sus-card text-sus-text placeholder-sus-muted focus:outline-none focus:ring-2 focus:ring-sus-primary focus:border-transparent transition-colors duration-200;
+  }
+  
   .badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
   }

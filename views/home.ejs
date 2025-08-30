@@ -44,6 +44,16 @@
                     <a href="#tech" class="text-sus-muted hover:text-sus-text transition-colors">Tech</a>
                     <a href="/score-calculation" class="text-sus-muted hover:text-sus-text transition-colors">Score Calculator</a>
                 </div>
+                <div class="flex items-center space-x-4">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <a href="/dashboard" class="text-sus-muted hover:text-sus-text transition-colors">Dashboard</a>
+                        <a href="/wallet" class="text-sus-muted hover:text-sus-text transition-colors">Wallet</a>
+                        <button onclick="logout()" class="btn-secondary px-4 py-2 text-sm">Logout</button>
+                    <% } else { %>
+                        <a href="/login" class="text-sus-muted hover:text-sus-text transition-colors">Login</a>
+                        <a href="/signup" class="btn-primary px-4 py-2 text-sm">Sign Up</a>
+                    <% } %>
+                </div>
             </div>
         </div>
     </nav>
@@ -61,8 +71,8 @@
             
             <!-- Primary CTAs -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <a href="/dashboard" class="btn-primary text-lg px-8 py-4 text-center" onclick="trackEvent('cta_click', 'join_worker')">
-                    🚴 Join as Worker
+                <a href="<%= typeof user !== 'undefined' && user ? '/dashboard' : '/signup' %>" class="btn-primary text-lg px-8 py-4 text-center" onclick="trackEvent('cta_click', 'join_worker')">
+                    🚴 <%= typeof user !== 'undefined' && user ? 'Go to Dashboard' : 'Join as Worker' %>
                 </a>
                 <button class="btn-secondary text-lg px-8 py-4" onclick="trackEvent('cta_click', 'cities_partners')">
                     🏙️ For Cities & Partners
@@ -990,6 +1000,24 @@
                         </div>
                     </div>
                 `;
+            }
+        }
+        
+        // Logout function
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
             }
         }
         
