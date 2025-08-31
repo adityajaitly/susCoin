@@ -422,7 +422,11 @@ app.get('/signup', (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // Protected routes (authentication required)
+=======
+// Dashboard page (no authentication required for demo)
+>>>>>>> 46f0118 (cleaning)
 app.get('/dashboard', (req, res) => {
   // Create demo user data for dashboard
   const demoUser = {
@@ -431,7 +435,51 @@ app.get('/dashboard', (req, res) => {
     totalCO2Saved: 45.2,
     monthlyCO2Saved: 12.8,
     monthlyCredits: 156,
+<<<<<<< HEAD
     monthlyGoal: 200
+=======
+    monthlyGoal: 200,
+    // Top Impact Areas
+    transportScore: 85,
+    transportCO2: 18.5,
+    waterScore: 72,
+    waterCO2: 12.3,
+    wasteScore: 68,
+    wasteCO2: 8.9,
+    electricityScore: 91,
+    electricityCO2: 5.5,
+    // Recent Activity
+    recentActivity: [
+      {
+        icon: '🚶',
+        description: 'Walking to Campus',
+        time: '2 hours ago',
+        credits: 25,
+        co2: 2.5
+      },
+      {
+        icon: '🚌',
+        description: 'Public Transport',
+        time: '1 day ago',
+        credits: 15,
+        co2: 1.8
+      },
+      {
+        icon: '🌱',
+        description: 'Welcome Bonus',
+        time: '3 days ago',
+        credits: 50,
+        co2: 0
+      },
+      {
+        icon: '🍕',
+        description: 'Food Voucher Redeemed',
+        time: '1 week ago',
+        credits: 100,
+        co2: 0
+      }
+    ]
+>>>>>>> 46f0118 (cleaning)
   };
   
   res.render('dashboard', {
@@ -518,11 +566,24 @@ app.get('/connect-mastercard', (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // Carbon calculator
 app.get('/calculator', (req, res) => {
   res.render('calculator', {
     title: 'susCoin Carbon Calculator - Calculate Your Impact',
     user: req.user
+=======
+// Score calculation page (main calculator)
+app.get('/score-calculation', (req, res) => {
+  const demoUser = {
+    name: 'Pitch Demo User',
+    avatar: 'P'
+  };
+  
+  res.render('score-calculation', {
+    title: 'susCoin Score Calculation - Calculate Your Transport Impact',
+    user: demoUser
+>>>>>>> 46f0118 (cleaning)
   });
 });
 
@@ -534,6 +595,7 @@ app.get('/leaderboard', (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // Score calculation page
 app.get('/score-calculation', (req, res) => {
   res.render('score-calculation', {
@@ -542,6 +604,8 @@ app.get('/score-calculation', (req, res) => {
   });
 });
 
+=======
+>>>>>>> 46f0118 (cleaning)
 // Connect Opal page (placeholder)
 app.get('/connect-opal', (req, res) => {
   res.render('error', {
@@ -550,6 +614,7 @@ app.get('/connect-opal', (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // Connect Mastercard page (placeholder)
 app.get('/connect-mastercard', (req, res) => {
   res.render('error', {
@@ -558,6 +623,8 @@ app.get('/connect-mastercard', (req, res) => {
   });
 });
 
+=======
+>>>>>>> 46f0118 (cleaning)
 // Tips page (placeholder)
 app.get('/tips', (req, res) => {
   res.render('error', {
