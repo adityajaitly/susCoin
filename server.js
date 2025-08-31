@@ -40,8 +40,33 @@ const { nanoid } = require('nanoid');
 // Demo auth: single seeded user (replace in prod)
 const DEMO_USER_ID = 'u_demo';
 
+// In-memory user storage (replace with database in production)
+const users = new Map();
+
 // Session management (simple in-memory for demo - use Redis in production)
 const sessions = new Map();
+
+// Initialize with some demo users
+users.set('demo@suscoin.com', {
+  id: 'u_demo',
+  name: 'Demo User',
+  email: 'demo@suscoin.com',
+  password: 'demo123', // In production, use hashed passwords
+  occupation: 'professional',
+  createdAt: new Date(),
+  wallet: 100
+});
+
+users.set('admin@suscoin.com', {
+  id: 'u_admin',
+  name: 'Admin User',
+  email: 'admin@suscoin.com',
+  password: 'admin123',
+  occupation: 'professional',
+  createdAt: new Date(),
+  wallet: 500,
+  isAdmin: true
+});
 
 // Static files
 app.use(express.static('public'));
@@ -53,129 +78,8 @@ app.set('views', path.join(__dirname, 'views'));
 // Load transport scoring table on startup
 loadTable().then(() => console.log('✅ transport scoring table loaded'));
 
-// Create demo user if it doesn't exist
-async function createDemoUser() {
-  try {
-    const demoEmail = 'demo@suscoin.com';
-    const demoPassword = 'demo123';
-    const passwordHash = await bcrypt.hash(demoPassword, 12);
-    
-    db.get('SELECT id FROM users WHERE email = ?', [demoEmail], (err, row) => {
-      if (err) {
-        console.error('Error checking demo user:', err);
-        return;
-      }
-      
-      if (!row) {
-        db.run(
-          'INSERT INTO users (id, name, email, password_hash, occupation) VALUES (?, ?, ?, ?, ?)',
-          [DEMO_USER_ID, 'Demo User', demoEmail, passwordHash, 'professional'],
-          function(err) {
-            if (err) {
-              console.error('Error creating demo user:', err);
-            } else {
-              console.log('✅ Demo user created (email: demo@suscoin.com, password: demo123)');
-              
-              // Create initial wallet entry for demo user
-              db.run(
-                'INSERT INTO wallet_ledger (id, user_id, delta, reason) VALUES (?, ?, ?, ?)',
-                [nanoid(), DEMO_USER_ID, 100, 'demo_welcome_bonus'],
-                function(err) {
-                  if (err) {
-                    console.error('Error creating demo welcome bonus:', err);
-                  }
-                }
-              );
-            }
-          }
-        );
-      } else {
-        console.log('✅ Demo user already exists');
-      }
-    });
-  } catch (error) {
-    console.error('Error in createDemoUser:', error);
-  }
-}
-
-// Create pitch demo account
-async function createPitchDemoUser() {
-  try {
-    const pitchEmail = 'pitch@suscoin.com';
-    const pitchPassword = 'pitch2024';
-    const passwordHash = await bcrypt.hash(pitchPassword, 12);
-    
-    db.get('SELECT id FROM users WHERE email = ?', [pitchEmail], (err, row) => {
-      if (err) {
-        console.error('Error checking pitch demo user:', err);
-        return;
-      }
-      
-      if (!row) {
-        const pitchUserId = 'u_pitch_demo';
-        db.run(
-          'INSERT INTO users (id, name, email, password_hash, occupation) VALUES (?, ?, ?, ?, ?)',
-          [pitchUserId, 'Pitch Demo User', pitchEmail, passwordHash, 'student'],
-          function(err) {
-            if (err) {
-              console.error('Error creating pitch demo user:', err);
-            } else {
-              console.log('✅ Pitch demo user created (email: pitch@suscoin.com, password: pitch2024)');
-              
-              // Create initial wallet entry with more credits for demo
-              db.run(
-                'INSERT INTO wallet_ledger (id, user_id, delta, reason) VALUES (?, ?, ?, ?)',
-                [nanoid(), pitchUserId, 500, 'pitch_demo_bonus'],
-                function(err) {
-                  if (err) {
-                    console.error('Error creating pitch demo bonus:', err);
-                  } else {
-                    console.log('✅ Pitch demo user wallet initialized with 500 credits');
-                  }
-                }
-              );
-
-              // Add some sample preferences for personalized recommendations
-              const samplePreferences = [
-                ['occupation', 'student'],
-                ['ageGroup', '18-24'],
-                ['livingSituation', 'dormitory'],
-                ['primaryTransport', 'walking'],
-                ['budgetPriority', 'food'],
-                ['environmentalInterest', 'very_interested'],
-                ['preferredRewards', 'food_vouchers,education'],
-                ['activityPreferences', 'transport_tracking,energy_saving'],
-                ['incomeLevel', 'under_1000'],
-                ['locationType', 'university_town'],
-                ['socialMediaUsage', 'daily'],
-                ['referralSource', 'university']
-              ];
-
-              samplePreferences.forEach(([key, value]) => {
-                db.run(
-                  'INSERT INTO user_preferences (id, user_id, question_key, answer) VALUES (?, ?, ?, ?)',
-                  [nanoid(), pitchUserId, key, value],
-                  function(err) {
-                    if (err) {
-                      console.error('Error creating preference:', key, err);
-                    }
-                  }
-                );
-              });
-            }
-          }
-        );
-      } else {
-        console.log('✅ Pitch demo user already exists');
-      }
-    });
-  } catch (error) {
-    console.error('Error in createPitchDemoUser:', error);
-  }
-}
-
-createDemoUser();
-createPitchDemoUser();
+// Demo users are now created in memory at startup
+console.log('✅ Demo users loaded in memory');
 
 // API Endpoints
 
@@ -411,6 +315,17 @@ app.get('/login', (req, res) => {
   });
 });
 
+app.get('/auth', (req, res) => {
+  // If user is already logged in, redirect to dashboard
+  const user = getCurrentUser(req);
+  if (user) {
+    return res.redirect('/dashboard');
+  }
+  res.render('auth', {
+    title: 'susCoin - Sign In or Create Profile'
+  });
+});
+
 app.get('/signup', (req, res) => {
   // If user is already logged in, redirect to dashboard
   const user = getCurrentUser(req);
@@ -422,11 +337,20 @@ app.get('/signup', (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-// Protected routes (authentication required)
-=======
+// Personalized dashboards based on user type
+app.get('/dashboard-student', (req, res) => {
+  res.render('dashboard-student', {
+    title: 'Student Dashboard - susCoin'
+  });
+});
+
+app.get('/dashboard-professional', (req, res) => {
+  res.render('dashboard-professional', {
+    title: 'Professional Dashboard - susCoin'
+  });
+});
+
 // Dashboard page (no authentication required for demo)
->>>>>>> 46f0118 (cleaning)
 app.get('/dashboard', (req, res) => {
   // Create demo user data for dashboard
   const demoUser = {
@@ -435,9 +359,6 @@ app.get('/dashboard', (req, res) => {
     totalCO2Saved: 45.2,
     monthlyCO2Saved: 12.8,
     monthlyCredits: 156,
-<<<<<<< HEAD
-    monthlyGoal: 200
-=======
     monthlyGoal: 200,
     // Top Impact Areas
     transportScore: 85,
@@ -479,7 +400,6 @@ app.get('/dashboard', (req, res) => {
         co2: 0
       }
     ]
->>>>>>> 46f0118 (cleaning)
   };
   
   res.render('dashboard', {
@@ -566,13 +486,6 @@ app.get('/connect-mastercard', (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-// Carbon calculator
-app.get('/calculator', (req, res) => {
-  res.render('calculator', {
-    title: 'susCoin Carbon Calculator - Calculate Your Impact',
-    user: req.user
-=======
 // Score calculation page (main calculator)
 app.get('/score-calculation', (req, res) => {
   const demoUser = {
@@ -583,7 +496,6 @@ app.get('/score-calculation', (req, res) => {
   res.render('score-calculation', {
     title: 'susCoin Score Calculation - Calculate Your Transport Impact',
     user: demoUser
->>>>>>> 46f0118 (cleaning)
   });
 });
 
@@ -595,26 +507,61 @@ app.get('/leaderboard', (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-// Score calculation page
-app.get('/score-calculation', (req, res) => {
-  res.render('score-calculation', {
-    title: 'susCoin Score Calculation - Calculate Your Transport Impact',
+
+// Carbon calculator
+app.get('/calculator', (req, res) => {
+  res.render('calculator', {
+    title: 'susCoin Carbon Calculator - Calculate Your Impact',
     user: req.user
   });
 });
 
-=======
->>>>>>> 46f0118 (cleaning)
-// Connect Opal page (placeholder)
+// Connect Opal Card page
 app.get('/connect-opal', (req, res) => {
-  res.render('error', {
-    title: 'Connect Opal Card - Coming Soon',
-    message: 'Opal card integration is coming soon!'
+  res.render('connect-opal', {
+    title: 'Connect Opal Card - susCoin'
   });
 });
 
-<<<<<<< HEAD
+// API endpoint to handle Opal card connection
+app.post('/api/connect-opal', (req, res) => {
+  const { cardNumber, securityCode, cardholderName, autoSync } = req.body;
+  
+  // Validate input
+  if (!cardNumber || cardNumber.length !== 16) {
+    return res.status(400).json({ error: 'Invalid card number' });
+  }
+  
+  if (!securityCode || securityCode.length !== 4) {
+    return res.status(400).json({ error: 'Invalid security code' });
+  }
+  
+  if (!cardholderName || cardholderName.trim() === '') {
+    return res.status(400).json({ error: 'Cardholder name is required' });
+  }
+  
+  // In a real implementation, you would:
+  // 1. Validate the card with Opal's API
+  // 2. Store the connection securely
+  // 3. Set up automatic syncing
+  
+  // For demo purposes, we'll simulate success
+  const user = getCurrentUser(req);
+  if (user) {
+    // Update user with Opal connection info
+    user.opalConnected = true;
+    user.opalCardNumber = cardNumber.substring(12); // Store only last 4 digits
+    user.opalAutoSync = autoSync;
+    user.opalConnectedAt = new Date().toISOString();
+  }
+  
+  res.json({ 
+    success: true, 
+    message: 'Opal card connected successfully',
+    cardNumber: cardNumber.substring(12) // Return only last 4 digits
+  });
+});
+
 // Connect Mastercard page (placeholder)
 app.get('/connect-mastercard', (req, res) => {
   res.render('error', {
@@ -623,8 +570,7 @@ app.get('/connect-mastercard', (req, res) => {
   });
 });
 
-=======
->>>>>>> 46f0118 (cleaning)
+
 // Tips page (placeholder)
 app.get('/tips', (req, res) => {
   res.render('error', {
@@ -650,119 +596,71 @@ app.post('/api/demo-scan', (req, res) => {
 
 // Authentication routes
 app.post('/api/signup', async (req, res) => {
-  const { name, email, occupation, password, newsletter, preferences } = req.body;
+  const { firstName, lastName, email, password, city, gigType, status, ageGroup, livingSituation } = req.body;
   
-  if (!name || !email || !occupation || !password) {
+  console.log('Signup request:', { firstName, lastName, email, city, gigType, status, ageGroup, livingSituation });
+  
+  if (!firstName || !lastName || !email || !password) {
     return res.status(400).json({ 
       success: false, 
-      message: 'All required fields must be provided' 
+      message: 'First name, last name, email, and password are required' 
     });
   }
 
-  if (!['student', 'professional'].includes(occupation)) {
+  if (password.length < 6) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Invalid occupation. Must be either "student" or "professional"' 
-    });
-  }
-
-  if (password.length < 8) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Password must be at least 8 characters long' 
+      message: 'Password must be at least 6 characters long' 
     });
   }
 
   try {
     // Check if user already exists
-    db.get('SELECT id FROM users WHERE email = ?', [email], async (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Database error occurred' 
-        });
+    if (users.has(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User with this email already exists' 
+      });
+    }
+
+    // Create new user
+    const userId = nanoid();
+    const newUser = {
+      id: userId,
+      name: `${firstName} ${lastName}`,
+      email: email,
+      password: password, // In production, hash this
+      city: city || 'Unknown',
+      gigType: gigType || 'general',
+      status: status || 'professional',
+      ageGroup: ageGroup || '18-24',
+      livingSituation: livingSituation || 'other',
+      occupation: status === 'student' ? 'student' : 'professional',
+      createdAt: new Date(),
+      wallet: 50, // Welcome bonus
+      isAdmin: false
+    };
+
+    // Store user in memory
+    users.set(email, newUser);
+    
+    console.log('User created successfully:', { email, userId, status });
+    console.log('Total users:', users.size);
+
+    res.json({ 
+      success: true, 
+      message: 'Account created successfully! Welcome to susCoin!',
+      userId: userId,
+      user: {
+        id: userId,
+        name: newUser.name,
+        email: email,
+        city: city,
+        gigType: gigType,
+        status: status,
+        ageGroup: ageGroup,
+        livingSituation: livingSituation
       }
-
-      if (row) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'User with this email already exists' 
-        });
-      }
-
-      // Hash password
-      const saltRounds = 12;
-      const passwordHash = await bcrypt.hash(password, saltRounds);
-
-      // Create user
-      const userId = nanoid();
-      db.run(
-        'INSERT INTO users (id, name, email, password_hash, occupation) VALUES (?, ?, ?, ?, ?)',
-        [userId, name, email, passwordHash, occupation],
-        function(err) {
-          if (err) {
-            console.error('Error creating user:', err);
-            return res.status(500).json({ 
-              success: false, 
-              message: 'Error creating user account' 
-            });
-          }
-
-          // Save user preferences if provided
-          if (preferences && typeof preferences === 'object') {
-            const preferenceEntries = Object.entries(preferences);
-            let preferencesSaved = 0;
-            let totalPreferences = preferenceEntries.length;
-
-            if (totalPreferences === 0) {
-              // No preferences to save, just create wallet entry
-              createWalletEntry();
-            } else {
-              preferenceEntries.forEach(([key, value]) => {
-                // Handle array values (like preferredRewards, activityPreferences)
-                const finalValue = Array.isArray(value) ? value.join(',') : value;
-                
-                db.run(
-                  'INSERT INTO user_preferences (id, user_id, question_key, answer) VALUES (?, ?, ?, ?)',
-                  [nanoid(), userId, key, finalValue],
-                  function(err) {
-                    if (err) {
-                      console.error('Error saving preference:', key, err);
-                    }
-                    preferencesSaved++;
-                    
-                    if (preferencesSaved === totalPreferences) {
-                      createWalletEntry();
-                    }
-                  }
-                );
-              });
-            }
-          } else {
-            createWalletEntry();
-          }
-
-          function createWalletEntry() {
-            // Create initial wallet entry
-            db.run(
-              'INSERT INTO wallet_ledger (id, user_id, delta, reason) VALUES (?, ?, ?, ?)',
-              [nanoid(), userId, 50, 'welcome_bonus'],
-              function(err) {
-                if (err) {
-                  console.error('Error creating welcome bonus:', err);
-                }
-                
-                res.json({ 
-                  success: true, 
-                  message: 'Account created successfully! Welcome to susCoin!',
-                  userId: userId
-                });
-              }
-            );
-          }
-        }
-      );
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -776,6 +674,8 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { email, password, rememberMe } = req.body;
   
+  console.log('Login request:', { email, rememberMe });
+  
   if (!email || !password) {
     return res.status(400).json({ 
       success: false, 
@@ -784,69 +684,61 @@ app.post('/api/login', async (req, res) => {
   }
 
   try {
-    db.get(
-      'SELECT id, name, email, password_hash, occupation FROM users WHERE email = ?',
-      [email],
-      async (err, user) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ 
-            success: false, 
-            message: 'Database error occurred' 
-          });
-        }
+    // Check if user exists in memory
+    const user = users.get(email);
+    
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
 
-        if (!user) {
-          return res.status(401).json({ 
-            success: false, 
-            message: 'Invalid email or password' 
-          });
-        }
+    // Verify password (simple comparison for demo)
+    if (user.password !== password) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
 
-        // Verify password
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-        if (!isValidPassword) {
-          return res.status(401).json({ 
-            success: false, 
-            message: 'Invalid email or password' 
-          });
-        }
+    // Update last login
+    user.lastLogin = new Date();
+    users.set(email, user);
+    
+    console.log('User logged in successfully:', { email, userId: user.id });
 
-        // Update last login
-        db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+    // Create session
+    const sessionId = nanoid();
+    const session = {
+      userId: user.id,
+      email: user.email,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)) // 30 days or 1 day
+    };
+    
+    sessions.set(sessionId, session);
 
-        // Create session
-        const sessionId = nanoid();
-        const sessionData = {
-          userId: user.id,
-          email: user.email,
-          name: user.name,
-          occupation: user.occupation,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)) // 30 days or 1 day
-        };
-        sessions.set(sessionId, sessionData);
+    // Set session cookie
+    res.cookie('sessionId', sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
+    });
 
-        // Set session cookie
-        res.cookie('sessionId', sessionId, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
-          sameSite: 'strict'
-        });
-
-        res.json({ 
-          success: true, 
-          message: 'Login successful!',
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            occupation: user.occupation
-          }
-        });
+    res.json({ 
+      success: true, 
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        occupation: user.occupation,
+        city: user.city,
+        gigType: user.gigType,
+        wallet: user.wallet
       }
-    );
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ 

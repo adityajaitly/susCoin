@@ -145,49 +145,17 @@
                     </div>
                 </div>
 
-                <!-- Filters & Stats -->
+                <!-- Stats -->
                 <div class="space-y-6">
-                    <!-- Filters -->
-                    <div class="card">
-                        <h3 class="font-semibold mb-4">Filters</h3>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-medium text-sus-muted mb-1">Time</label>
-                                <select class="w-full p-2 border border-sus-line rounded-lg bg-sus-card" onchange="updateMap('time', this.value)">
-                                    <option value="today">Today</option>
-                                    <option value="week">This Week</option>
-                                    <option value="month">This Month</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-sus-muted mb-1">Gig Type</label>
-                                <select class="w-full p-2 border border-sus-line rounded-lg bg-sus-card" onchange="updateMap('gigType', this.value)">
-                                    <option value="all">All Types</option>
-                                    <option value="delivery">Delivery</option>
-                                    <option value="rideshare">Rideshare</option>
-                                    <option value="services">Services</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-sus-muted mb-1">View</label>
-                                <select class="w-full p-2 border border-sus-line rounded-lg bg-sus-card" onchange="updateMap('view', this.value)">
-                                    <option value="co2">CO₂e Saved</option>
-                                    <option value="participation">Participation Rate</option>
-                                    <option value="equity">Equity Index</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Callout Cards -->
                     <div class="space-y-4">
                         <div class="card bg-sus-primary text-white">
                             <h4 class="font-semibold mb-2">🏆 Top Suburb</h4>
-                            <p class="text-sm">Downtown West - 847 credits earned</p>
+                            <p class="text-sm" id="topSuburb">Surry Hills, Sydney - 847 credits earned</p>
                         </div>
                         <div class="card bg-sus-secondary text-white">
                             <h4 class="font-semibold mb-2">📈 Fastest Rising</h4>
-                            <p class="text-sm">Bike Delivery +23% this week</p>
+                            <p class="text-sm" id="fastestRising">Bike Delivery +23% this week</p>
                         </div>
                         <div class="card bg-sus-accent text-sus-text">
                             <h4 class="font-semibold mb-2">✅ Verified Events</h4>
@@ -204,20 +172,7 @@
         <div class="max-w-7xl mx-auto">
             <h2 class="text-3xl font-bold text-center mb-8">Leaderboard</h2>
             
-            <!-- Tabs -->
-            <div class="flex justify-center mb-8">
-                <div class="flex bg-sus-line rounded-lg p-1">
-                    <button class="px-4 py-2 rounded-md bg-sus-primary text-white font-medium" onclick="switchLeaderboard('city')">
-                        🏙️ City
-                    </button>
-                    <button class="px-4 py-2 rounded-md text-sus-muted hover:text-sus-text transition-colors" onclick="switchLeaderboard('suburb')">
-                        🏘️ Suburb
-                    </button>
-                    <button class="px-4 py-2 rounded-md text-sus-muted hover:text-sus-text transition-colors" onclick="switchLeaderboard('gigType')">
-                        🚴 Gig Type
-                    </button>
-                </div>
-            </div>
+
 
             <!-- Leaderboard Content -->
             <div id="leaderboardContent" class="card max-w-2xl mx-auto">
@@ -226,8 +181,8 @@
                         <div class="flex items-center space-x-3">
                             <span class="text-2xl">🥇</span>
                             <div>
-                                <div class="font-semibold">Downtown West</div>
-                                <div class="text-sm text-sus-muted">847 credits</div>
+                                <div class="font-semibold">Sydney</div>
+                                <div class="text-sm text-sus-muted">1247 credits</div>
                             </div>
                         </div>
                         <div class="text-right">
@@ -240,8 +195,8 @@
                         <div class="flex items-center space-x-3">
                             <span class="text-2xl">🥈</span>
                             <div>
-                                <div class="font-semibold">Riverside East</div>
-                                <div class="text-sm text-sus-muted">723 credits</div>
+                                <div class="font-semibold">Melbourne</div>
+                                <div class="text-sm text-sus-muted">1123 credits</div>
                             </div>
                         </div>
                         <div class="text-right">
@@ -254,8 +209,8 @@
                         <div class="flex items-center space-x-3">
                             <span class="text-2xl">🥉</span>
                             <div>
-                                <div class="font-semibold">University District</div>
-                                <div class="text-sm text-sus-muted">689 credits</div>
+                                <div class="font-semibold">Brisbane</div>
+                                <div class="text-sm text-sus-muted">989 credits</div>
                             </div>
                         </div>
                         <div class="text-right">
@@ -438,7 +393,7 @@
         <div class="max-w-7xl mx-auto">
             <h2 class="text-3xl font-bold text-center mb-12">Tech & Trust</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
                 <div class="card text-center">
                     <div class="text-4xl mb-4">🔐</div>
                     <h3 class="font-semibold mb-2">Edge QR Attestation</h3>
@@ -453,6 +408,21 @@
                     <div class="text-4xl mb-4">🛡️</div>
                     <h3 class="font-semibold mb-2">Privacy by Design</h3>
                     <p class="text-sus-muted">Differential privacy, opt-in data</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4">🔒</div>
+                    <h3 class="font-semibold mb-2">End-to-End Encryption</h3>
+                    <p class="text-sus-muted">Your data is always secure</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="font-semibold mb-2">Decentralized Architecture</h3>
+                    <p class="text-sus-muted">Resilient and censorship-resistant</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="font-semibold mb-2">Open Source & Auditable</h3>
+                    <p class="text-sus-muted">Community-driven transparency</p>
                 </div>
             </div>
             
