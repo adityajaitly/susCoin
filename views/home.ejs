@@ -32,7 +32,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="#" class="flex items-center">
+                    <a href="/" class="flex items-center">
                         <img src="/images/logo.png" alt="susCoin Logo" class="h-10 w-auto mr-2 logo">
                         <span class="text-2xl font-bold text-sus-primary">susCoin</span>
                     </a>
@@ -69,17 +69,11 @@
                 Earn credits for low-carbon work. Unlock citywide rewards. See impact live.
             </p>
             
-            <!-- Primary CTAs -->
-            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <a href="<%= typeof user !== 'undefined' && user ? '/dashboard' : '/signup' %>" class="btn-primary text-lg px-8 py-4 text-center" onclick="trackEvent('cta_click', 'join_worker')">
-                    🚴 <%= typeof user !== 'undefined' && user ? 'Go to Dashboard' : 'Join as Worker' %>
+            <!-- Primary CTA -->
+            <div class="flex justify-center mb-12">
+                <a href="<%= typeof user !== 'undefined' && user ? '/dashboard' : '/signup' %>" class="btn-primary text-lg px-8 py-4 text-center" onclick="trackEvent('cta_click', 'join')">
+                    🚴 <%= typeof user !== 'undefined' && user ? 'Go to Dashboard' : 'Join' %>
                 </a>
-                <button class="btn-secondary text-lg px-8 py-4" onclick="trackEvent('cta_click', 'cities_partners')">
-                    🏙️ For Cities & Partners
-                </button>
-                <button class="btn-accent text-lg px-8 py-4" onclick="trackEvent('cta_click', 'view_live_city')">
-                    📊 View Live City
-                </button>
             </div>
 
             <!-- Live Counters -->
