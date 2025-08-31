@@ -16,6 +16,16 @@ db.serialize(() => {
     last_login DATETIME
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS user_preferences(
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    question_key TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    UNIQUE(user_id, question_key)
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS activities(
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -66,4 +76,22 @@ function getBalance(userId){
   });
 }
 
-module.exports = { db, getBalance };
+function getUserPreferences(userId) {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT question_key, answer FROM user_preferences WHERE user_id = ?`, [userId],
+      (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          const preferences = {};
+          rows.forEach(row => {
+            preferences[row.question_key] = row.answer;
+          });
+          resolve(preferences);
+        }
+      }
+    );
+  });
+}
+
+module.exports = { db, getBalance, getUserPreferences };

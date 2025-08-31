@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>susCoin Redeem - Use Your Credits</title>
-    <meta name="description" content="Redeem your susCoins for food, coffee, and other rewards">
+    <meta name="description" content="Redeem your susCoins for amazing rewards and discounts">
     
     <!-- Tailwind CSS -->
     <link href="/styles/output.css" rel="stylesheet">
@@ -21,11 +21,8 @@
                     <a href="/dashboard" class="text-2xl font-bold text-sus-primary">🌍 susCoin</a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/wallet" class="p-2 text-sus-muted hover:text-sus-text transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                        </svg>
-                    </a>
+                    <a href="/dashboard" class="text-sus-muted hover:text-sus-text transition-colors px-3 py-2">Dashboard</a>
+                    <a href="/wallet" class="text-sus-muted hover:text-sus-text transition-colors px-3 py-2">Wallet</a>
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 bg-sus-primary rounded-full flex items-center justify-center text-white text-sm font-semibold">
                             <%= user.avatar || user.name.charAt(0).toUpperCase() %>
@@ -39,184 +36,168 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Carbon Impact Summary -->
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-sus-text mb-2">🎁 Redeem Your Rewards</h1>
+            <p class="text-sus-muted">Use your susCoins for amazing rewards and discounts</p>
+        </div>
+
+        <!-- Balance Display -->
         <div class="card mb-8">
-            <h2 class="text-2xl font-bold mb-6">🌱 Your Carbon Impact</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-sus-primary mb-2" id="totalCarbonSaved">
-                        <%= user.totalCO2Saved.toFixed(1) %>
-                    </div>
-                    <div class="text-sus-muted">Total CO₂ Saved (kg)</div>
+            <div class="text-center">
+                <div class="text-4xl font-bold text-sus-primary mb-2"><%= user.balance || 440 %></div>
+                <div class="text-sus-muted text-lg">susCoins Available</div>
+            </div>
+        </div>
+
+        <!-- Reward Categories -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-6">🏷️ Reward Categories</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card text-center hover:shadow-lg transition-shadow cursor-pointer">
+                    <div class="text-4xl mb-3">🍕</div>
+                    <h3 class="font-semibold mb-2">Food & Dining</h3>
+                    <p class="text-sm text-sus-muted">Restaurants, cafes, food delivery</p>
                 </div>
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-sus-secondary mb-2" id="availableCredits">
-                        <%= user.walletBalance %>
-                    </div>
-                    <div class="text-sus-muted">Available susCoins</div>
+                <div class="card text-center hover:shadow-lg transition-shadow cursor-pointer">
+                    <div class="text-4xl mb-3">🚌</div>
+                    <h3 class="font-semibold mb-2">Transport</h3>
+                    <p class="text-sm text-sus-muted">Public transport, ride-sharing</p>
                 </div>
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-sus-accent mb-2" id="treesEquivalent">
-                        <%= (user.totalCO2Saved * 0.05).toFixed(1) %>
-                    </div>
-                    <div class="text-sus-muted">Trees Equivalent</div>
+                <div class="card text-center hover:shadow-lg transition-shadow cursor-pointer">
+                    <div class="text-4xl mb-3">⚡</div>
+                    <h3 class="font-semibold mb-2">Utilities</h3>
+                    <p class="text-sm text-sus-muted">Electricity, water, gas bills</p>
+                </div>
+                <div class="card text-center hover:shadow-lg transition-shadow cursor-pointer">
+                    <div class="text-4xl mb-3">🛍️</div>
+                    <h3 class="font-semibold mb-2">Shopping</h3>
+                    <p class="text-sm text-sus-muted">Retail stores, online shopping</p>
                 </div>
             </div>
         </div>
 
-        <!-- Monthly Breakdown -->
-        <div class="card mb-8">
-            <h3 class="text-xl font-semibold mb-4">📊 Monthly Earning Breakdown</h3>
-            <div class="space-y-4">
-                <% user.monthlyBreakdown.forEach(month => { %>
-                <div class="flex items-center justify-between p-4 bg-sus-line/30 rounded-lg">
-                    <div>
-                        <div class="font-semibold"><%= month.month %></div>
-                        <div class="text-sm text-sus-muted"><%= month.activities %> activities completed</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-semibold text-sus-primary">+<%= month.credits %> susCoins</div>
-                        <div class="text-sm text-sus-muted"><%= month.co2.toFixed(1) %> kg CO₂ saved</div>
-                    </div>
-                </div>
-                <% }); %>
-            </div>
-        </div>
-
-        <!-- Redemption Options -->
-        <div class="card mb-8">
-            <h3 class="text-xl font-semibold mb-4">🎁 Available Rewards</h3>
+        <!-- Featured Rewards -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-6">⭐ Featured Rewards</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Food Rewards -->
-                <div class="space-y-4">
-                    <h4 class="font-semibold text-lg">🍕 Food & Dining</h4>
-                    <div class="space-y-3">
-                        <div class="p-4 bg-sus-primary/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Free Coffee</div>
-                                <div class="text-sus-primary font-bold">50 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">Any café in your area</div>
-                            <button class="btn-primary w-full" onclick="redeemReward('coffee', 50)">Redeem</button>
+                <!-- Food Voucher -->
+                <div class="card hover:shadow-lg transition-shadow">
+                    <div class="bg-gradient-to-br from-red-100 to-orange-100 p-6 rounded-t-lg">
+                        <div class="text-6xl text-center mb-4">🍕</div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Food Voucher</h3>
+                        <p class="text-center text-sus-muted">Get 20% off at local restaurants</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-sus-primary">100</span>
+                            <span class="text-sus-muted">susCoins</span>
                         </div>
-                        
-                        <div class="p-4 bg-sus-secondary/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Pizza Slice</div>
-                                <div class="text-sus-secondary font-bold">100 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">Partner restaurants</div>
-                            <button class="btn-secondary w-full" onclick="redeemReward('pizza', 100)">Redeem</button>
-                        </div>
-                        
-                        <div class="p-4 bg-sus-accent/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Ice Cream</div>
-                                <div class="text-sus-accent font-bold">90 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">Gelato shops</div>
-                            <button class="btn-accent w-full" onclick="redeemReward('icecream', 90)">Redeem</button>
-                        </div>
+                        <button class="btn-primary w-full">Redeem Now</button>
                     </div>
                 </div>
 
-                <!-- Transport Rewards -->
-                <div class="space-y-4">
-                    <h4 class="font-semibold text-lg">🚇 Transport</h4>
-                    <div class="space-y-3">
-                        <div class="p-4 bg-sus-info/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Bus Pass (1 Day)</div>
-                                <div class="text-sus-info font-bold">200 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">Unlimited bus travel</div>
-                            <button class="bg-sus-info text-white px-4 py-2 rounded-lg w-full hover:opacity-90" onclick="redeemReward('bus_pass', 200)">Redeem</button>
+                <!-- Transport Pass -->
+                <div class="card hover:shadow-lg transition-shadow">
+                    <div class="bg-gradient-to-br from-blue-100 to-cyan-100 p-6 rounded-t-lg">
+                        <div class="text-6xl text-center mb-4">🚌</div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Transport Pass</h3>
+                        <p class="text-center text-sus-muted">Free week of public transport</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-sus-primary">150</span>
+                            <span class="text-sus-muted">susCoins</span>
                         </div>
-                        
-                        <div class="p-4 bg-sus-success/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Bike Share (1 Hour)</div>
-                                <div class="text-sus-success font-bold">75 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">City bike sharing</div>
-                            <button class="bg-sus-success text-white px-4 py-2 rounded-lg w-full hover:opacity-90" onclick="redeemReward('bike_share', 75)">Redeem</button>
-                        </div>
+                        <button class="btn-primary w-full">Redeem Now</button>
                     </div>
                 </div>
 
-                <!-- Lifestyle Rewards -->
-                <div class="space-y-4">
-                    <h4 class="font-semibold text-lg">🌱 Lifestyle</h4>
-                    <div class="space-y-3">
-                        <div class="p-4 bg-sus-warning/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Plant a Tree</div>
-                                <div class="text-sus-warning font-bold">300 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">Local tree planting</div>
-                            <button class="bg-sus-warning text-sus-text px-4 py-2 rounded-lg w-full hover:opacity-90" onclick="redeemReward('plant_tree', 300)">Redeem</button>
+                <!-- Utility Rebate -->
+                <div class="card hover:shadow-lg transition-shadow">
+                    <div class="bg-gradient-to-br from-green-100 to-emerald-100 p-6 rounded-t-lg">
+                        <div class="text-6xl text-center mb-4">⚡</div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Utility Rebate</h3>
+                        <p class="text-center text-sus-muted">$10 off your electricity bill</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-sus-primary">200</span>
+                            <span class="text-sus-muted">susCoins</span>
                         </div>
-                        
-                        <div class="p-4 bg-sus-error/10 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="font-semibold">Carbon Offset</div>
-                                <div class="text-sus-error font-bold">500 susCoins</div>
-                            </div>
-                            <div class="text-sm text-sus-muted mb-3">Offset 1 ton CO₂</div>
-                            <button class="bg-sus-error text-white px-4 py-2 rounded-lg w-full hover:opacity-90" onclick="redeemReward('carbon_offset', 500)">Redeem</button>
+                        <button class="btn-primary w-full">Redeem Now</button>
+                    </div>
+                </div>
+
+                <!-- Coffee Voucher -->
+                <div class="card hover:shadow-lg transition-shadow">
+                    <div class="bg-gradient-to-br from-amber-100 to-yellow-100 p-6 rounded-t-lg">
+                        <div class="text-6xl text-center mb-4">☕</div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Coffee Voucher</h3>
+                        <p class="text-center text-sus-muted">Free coffee at campus cafes</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-sus-primary">50</span>
+                            <span class="text-sus-muted">susCoins</span>
                         </div>
+                        <button class="btn-primary w-full">Redeem Now</button>
+                    </div>
+                </div>
+
+                <!-- Shopping Discount -->
+                <div class="card hover:shadow-lg transition-shadow">
+                    <div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-t-lg">
+                        <div class="text-6xl text-center mb-4">🛍️</div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Shopping Discount</h3>
+                        <p class="text-center text-sus-muted">15% off at local stores</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-sus-primary">75</span>
+                            <span class="text-sus-muted">susCoins</span>
+                        </div>
+                        <button class="btn-primary w-full">Redeem Now</button>
+                    </div>
+                </div>
+
+                <!-- Education Credit -->
+                <div class="card hover:shadow-lg transition-shadow">
+                    <div class="bg-gradient-to-br from-indigo-100 to-blue-100 p-6 rounded-t-lg">
+                        <div class="text-6xl text-center mb-4">📚</div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Education Credit</h3>
+                        <p class="text-center text-sus-muted">$25 off online courses</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-sus-primary">300</span>
+                            <span class="text-sus-muted">susCoins</span>
+                        </div>
+                        <button class="btn-primary w-full">Redeem Now</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Progress to Next Reward -->
-        <div class="card mb-8">
-            <h3 class="text-xl font-semibold mb-4">🎯 Progress to Next Reward</h3>
-            <div class="space-y-4">
-                <div class="p-4 bg-sus-accent/10 rounded-lg">
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="font-semibold">Free Ice Cream</div>
-                        <div class="text-sus-accent font-bold">90/100 susCoins</div>
-                    </div>
-                    <div class="bg-sus-line rounded-full h-3 mb-2">
-                        <div class="bg-sus-accent h-3 rounded-full" style="width: 90%"></div>
-                    </div>
-                    <div class="text-sm text-sus-muted">Only 10 more susCoins to unlock!</div>
+        <!-- How It Works -->
+        <div class="card bg-sus-primary/10 border-sus-primary/20">
+            <h2 class="text-2xl font-semibold mb-6 text-center">🔄 How It Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-4xl mb-3">1️⃣</div>
+                    <h3 class="font-semibold mb-2">Earn Credits</h3>
+                    <p class="text-sus-muted">Complete sustainable activities to earn susCoins</p>
                 </div>
-                
-                <div class="p-4 bg-sus-primary/10 rounded-lg">
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="font-semibold">Bus Pass (1 Day)</div>
-                        <div class="text-sus-primary font-bold">200/200 susCoins</div>
-                    </div>
-                    <div class="bg-sus-line rounded-full h-3 mb-2">
-                        <div class="bg-sus-primary h-3 rounded-full" style="width: 100%"></div>
-                    </div>
-                    <div class="text-sm text-sus-muted">Ready to redeem! 🎉</div>
+                <div class="text-center">
+                    <div class="text-4xl mb-3">2️⃣</div>
+                    <h3 class="font-semibold mb-2">Choose Rewards</h3>
+                    <p class="text-sus-muted">Browse and select from available rewards</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Redemption History -->
-        <div class="card">
-            <h3 class="text-xl font-semibold mb-4">📋 Recent Redemptions</h3>
-            <div class="space-y-3">
-                <% user.redemptionHistory.forEach(redemption => { %>
-                <div class="flex items-center justify-between p-4 bg-sus-line/30 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-xl"><%= redemption.icon %></div>
-                        <div>
-                            <div class="font-medium"><%= redemption.reward %></div>
-                            <div class="text-sm text-sus-muted"><%= redemption.date %></div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-semibold text-sus-secondary">-<%= redemption.cost %> susCoins</div>
-                        <div class="text-sm text-sus-muted"><%= redemption.status %></div>
-                    </div>
+                <div class="text-center">
+                    <div class="text-4xl mb-3">3️⃣</div>
+                    <h3 class="font-semibold mb-2">Redeem & Enjoy</h3>
+                    <p class="text-sus-muted">Use your credits and enjoy your rewards</p>
                 </div>
-                <% }); %>
             </div>
         </div>
     </main>
@@ -225,8 +206,9 @@
     <nav class="fixed bottom-0 left-0 right-0 bg-sus-card border-t border-sus-line lg:hidden">
         <div class="flex justify-around py-2">
             <a href="/dashboard" class="flex flex-col items-center p-2 text-sus-muted hover:text-sus-text">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
                 </svg>
                 <span class="text-xs mt-1">Dashboard</span>
             </a>
@@ -242,90 +224,26 @@
                 </svg>
                 <span class="text-xs mt-1">Redeem</span>
             </a>
-            <a href="/calculator" class="flex flex-col items-center p-2 text-sus-muted hover:text-sus-text">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-                <span class="text-xs mt-1">Calculator</span>
-            </a>
         </div>
     </nav>
-
-    <!-- Redemption Modal -->
-    <div id="redemptionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-sus-card rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-semibold mb-4">Confirm Redemption</h3>
-            <p class="text-sus-muted mb-6" id="modalMessage"></p>
-            <div class="flex space-x-4">
-                <button class="btn-secondary flex-1" onclick="closeModal()">Cancel</button>
-                <button class="btn-primary flex-1" onclick="confirmRedemption()">Confirm</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Initialize Socket.IO
         const socket = io();
         
-        let currentRedemption = null;
-        
-        function redeemReward(rewardType, cost) {
-            const availableCredits = <%= user.walletBalance %>;
-            
-            if (availableCredits < cost) {
-                alert('Not enough susCoins! You need ' + cost + ' susCoins but have ' + availableCredits);
-                return;
-            }
-            
-            currentRedemption = { type: rewardType, cost: cost };
-            const modal = document.getElementById('redemptionModal');
-            const message = document.getElementById('modalMessage');
-            
-            const rewardNames = {
-                'coffee': 'Free Coffee',
-                'pizza': 'Pizza Slice',
-                'icecream': 'Ice Cream',
-                'bus_pass': 'Bus Pass (1 Day)',
-                'bike_share': 'Bike Share (1 Hour)',
-                'plant_tree': 'Plant a Tree',
-                'carbon_offset': 'Carbon Offset'
-            };
-            
-            message.textContent = `Redeem ${rewardNames[rewardType]} for ${cost} susCoins?`;
-            modal.classList.remove('hidden');
-        }
-        
-        function closeModal() {
-            document.getElementById('redemptionModal').classList.add('hidden');
-            currentRedemption = null;
-        }
-        
-        function confirmRedemption() {
-            if (!currentRedemption) return;
-            
-            socket.emit('redeemReward', currentRedemption);
-            closeModal();
-            
-            // Show success message
-            alert('Redemption successful! Check your email for details.');
-            
-            // Track analytics
-            socket.emit('analytics', { 
-                event: 'reward_redeemed', 
-                data: { 
-                    reward: currentRedemption.type, 
-                    cost: currentRedemption.cost 
-                } 
-            });
-        }
-        
-        // Real-time updates
-        socket.on('redemptionUpdate', (data) => {
-            document.getElementById('availableCredits').textContent = data.newBalance;
-        });
-
         // Track page view
         socket.emit('analytics', { event: 'page_view', data: { page: 'redeem' } });
+
+        // Add click handlers for redeem buttons
+        document.querySelectorAll('.btn-primary').forEach(button => {
+            button.addEventListener('click', function() {
+                const card = this.closest('.card');
+                const rewardName = card.querySelector('h3').textContent;
+                const cost = card.querySelector('.text-sus-primary').textContent;
+                
+                alert(`🎉 Successfully redeemed ${rewardName} for ${cost} susCoins! Check your email for details.`);
+            });
+        });
     </script>
 </body>
 </html>

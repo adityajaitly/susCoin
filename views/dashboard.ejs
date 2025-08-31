@@ -98,6 +98,40 @@
             </div>
         </div>
 
+        <!-- Personalized Recommendations -->
+        <div class="card mb-8">
+            <h3 class="text-xl font-semibold mb-4">🎯 Personalized Recommendations</h3>
+            <div id="recommendationsLoading" class="text-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sus-primary mx-auto mb-4"></div>
+                <p class="text-sus-muted">Loading your personalized recommendations...</p>
+            </div>
+            <div id="recommendationsContent" class="hidden">
+                <!-- Activity Recommendations -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-sus-text mb-3">🚀 Recommended Activities</h4>
+                    <div id="activityRecommendations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Activity cards will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Reward Recommendations -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-sus-text mb-3">🎁 Recommended Rewards</h4>
+                    <div id="rewardRecommendations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Reward cards will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div>
+                    <h4 class="text-lg font-semibold text-sus-text mb-3">💡 Tips for You</h4>
+                    <div id="tipsRecommendations" class="space-y-3">
+                        <!-- Tips will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Top Scoring Avenues -->
         <div class="card mb-8">
             <h3 class="text-xl font-semibold mb-4">🏆 Your Top Impact Areas</h3>
@@ -274,6 +308,128 @@
 
         // Track page view
         socket.emit('analytics', { event: 'page_view', data: { page: 'dashboard' } });
+
+        // Load personalized recommendations
+        async function loadPersonalizedRecommendations() {
+            try {
+                const response = await fetch('/api/personalized-recommendations');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayRecommendations(data.recommendations);
+                } else {
+                    console.error('Failed to load recommendations:', data.message);
+                    showRecommendationsError();
+                }
+            } catch (error) {
+                console.error('Error loading recommendations:', error);
+                showRecommendationsError();
+            }
+        }
+
+        function displayRecommendations(recommendations) {
+            // Hide loading, show content
+            document.getElementById('recommendationsLoading').classList.add('hidden');
+            document.getElementById('recommendationsContent').classList.remove('hidden');
+
+            // Display activity recommendations
+            const activityContainer = document.getElementById('activityRecommendations');
+            activityContainer.innerHTML = '';
+            
+            if (recommendations.activities.length === 0) {
+                activityContainer.innerHTML = '<p class="text-sus-muted col-span-full text-center py-4">No activity recommendations available yet.</p>';
+            } else {
+                recommendations.activities.forEach(activity => {
+                    const card = document.createElement('div');
+                    card.className = 'card bg-sus-accent/10 border-sus-accent/20';
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between mb-3">
+                            <h5 class="font-semibold text-sus-text">${activity.title}</h5>
+                            <span class="text-xs px-2 py-1 rounded-full ${getDifficultyColor(activity.difficulty)}">${activity.difficulty}</span>
+                        </div>
+                        <p class="text-sm text-sus-muted mb-3">${activity.description}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sus-primary font-semibold">+${activity.potentialCredits} credits</span>
+                            <button class="btn-primary text-xs px-3 py-1">Start</button>
+                        </div>
+                    `;
+                    activityContainer.appendChild(card);
+                });
+            }
+
+            // Display reward recommendations
+            const rewardContainer = document.getElementById('rewardRecommendations');
+            rewardContainer.innerHTML = '';
+            
+            if (recommendations.rewards.length === 0) {
+                rewardContainer.innerHTML = '<p class="text-sus-muted col-span-full text-center py-4">No reward recommendations available yet.</p>';
+            } else {
+                recommendations.rewards.forEach(reward => {
+                    const card = document.createElement('div');
+                    card.className = 'card bg-sus-primary/10 border-sus-primary/20';
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between mb-3">
+                            <h5 class="font-semibold text-sus-text">${reward.title}</h5>
+                            <span class="text-xs px-2 py-1 rounded-full bg-sus-primary/20 text-sus-primary">${reward.category}</span>
+                        </div>
+                        <p class="text-sm text-sus-muted mb-3">${reward.description}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sus-primary font-semibold">${reward.cost} credits</span>
+                            <button class="btn-primary text-xs px-3 py-1">Redeem</button>
+                        </div>
+                    `;
+                    rewardContainer.appendChild(card);
+                });
+            }
+
+            // Display tips
+            const tipsContainer = document.getElementById('tipsRecommendations');
+            tipsContainer.innerHTML = '';
+            
+            if (recommendations.tips.length === 0) {
+                tipsContainer.innerHTML = '<p class="text-sus-muted text-center py-4">No tips available yet.</p>';
+            } else {
+                recommendations.tips.forEach(tip => {
+                    const tipElement = document.createElement('div');
+                    tipElement.className = 'card bg-sus-secondary/10 border-sus-secondary/20';
+                    tipElement.innerHTML = `
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mr-3">
+                                <span class="text-2xl">💡</span>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-sus-text mb-1">${tip.title}</h5>
+                                <p class="text-sm text-sus-muted">${tip.description}</p>
+                            </div>
+                        </div>
+                    `;
+                    tipsContainer.appendChild(tipElement);
+                });
+            }
+        }
+
+        function getDifficultyColor(difficulty) {
+            switch (difficulty) {
+                case 'easy': return 'bg-green-100 text-green-800';
+                case 'medium': return 'bg-yellow-100 text-yellow-800';
+                case 'hard': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function showRecommendationsError() {
+            document.getElementById('recommendationsLoading').classList.add('hidden');
+            document.getElementById('recommendationsContent').classList.remove('hidden');
+            document.getElementById('recommendationsContent').innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-sus-muted">Unable to load personalized recommendations.</p>
+                    <button onclick="loadPersonalizedRecommendations()" class="btn-primary mt-4">Try Again</button>
+                </div>
+            `;
+        }
+
+        // Load recommendations when page loads
+        loadPersonalizedRecommendations();
     </script>
 </body>
 </html>

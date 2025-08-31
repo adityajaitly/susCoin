@@ -38,7 +38,7 @@
 
     <!-- Main Content -->
     <div class="min-h-screen flex items-center justify-center pt-16 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
+        <div class="max-w-2xl w-full space-y-8">
             <!-- Header -->
             <div class="text-center">
                 <div class="mx-auto h-16 w-16 bg-sus-primary rounded-full flex items-center justify-center mb-4">
@@ -48,158 +48,472 @@
                 <p class="text-sus-muted">Start earning credits for your climate impact</p>
             </div>
 
-            <!-- Signup Form -->
+            <!-- Progress Bar -->
+            <div class="w-full bg-sus-line rounded-full h-2 mb-8">
+                <div id="progressBar" class="bg-sus-primary h-2 rounded-full transition-all duration-300" style="width: 16.67%"></div>
+            </div>
+
+            <!-- Multi-step Form -->
             <div class="card">
                 <form id="signupForm" class="space-y-6">
-                    <!-- Full Name Field -->
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-sus-text mb-2">
-                            Full name
-                        </label>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            required
-                            class="input-field w-full"
-                            placeholder="Enter your full name"
-                        >
+                    <!-- Step 1: Basic Information -->
+                    <div id="step1" class="step-content">
+                        <h3 class="text-xl font-semibold text-sus-text mb-6">Step 1: Basic Information</h3>
+                        
+                        <!-- Full Name Field -->
+                        <div class="mb-6">
+                            <label for="name" class="block text-sm font-medium text-sus-text mb-2">
+                                Full name
+                            </label>
+                            <input
+                                id="name"
+                                name="name"
+                                type="text"
+                                required
+                                class="input-field w-full"
+                                placeholder="Enter your full name"
+                            >
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="mb-6">
+                            <label for="email" class="block text-sm font-medium text-sus-text mb-2">
+                                Email address
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                required
+                                class="input-field w-full"
+                                placeholder="Enter your email"
+                            >
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-6">
+                            <label for="password" class="block text-sm font-medium text-sus-text mb-2">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                class="input-field w-full"
+                                placeholder="Create a password"
+                                minlength="8"
+                            >
+                            <p class="text-xs text-sus-muted mt-1">Must be at least 8 characters long</p>
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-6">
+                            <label for="confirmPassword" class="block text-sm font-medium text-sus-text mb-2">
+                                Confirm password
+                            </label>
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type="password"
+                                required
+                                class="input-field w-full"
+                                placeholder="Confirm your password"
+                            >
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="button" id="nextStep1" class="btn-primary px-6 py-2" onclick="nextStep()">
+                                Next Step
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Email Field -->
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-sus-text mb-2">
-                            Email address
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            class="input-field w-full"
-                            placeholder="Enter your email"
-                        >
+                    <!-- Step 2: Personalization Questions -->
+                    <div id="step2" class="step-content hidden">
+                        <h3 class="text-xl font-semibold text-sus-text mb-6">Step 2: Personalize Your Experience</h3>
+                        <p class="text-sus-muted mb-6">Help us understand your preferences to offer you the best incentives!</p>
+                        
+                        <!-- Question 1: Occupation -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                1. What's your current status?
+                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="occupation" value="student" class="mr-3" required>
+                                    <div>
+                                        <div class="font-medium">Student</div>
+                                        <div class="text-sm text-sus-muted">Currently studying at a university or college</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="occupation" value="professional" class="mr-3" required>
+                                    <div>
+                                        <div class="font-medium">Working Professional</div>
+                                        <div class="text-sm text-sus-muted">Employed full-time or part-time</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 2: Age Group -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                2. What's your age group?
+                            </label>
+                            <select name="ageGroup" class="input-field w-full" required>
+                                <option value="">Select your age group</option>
+                                <option value="18-24">18-24 years</option>
+                                <option value="25-34">25-34 years</option>
+                                <option value="35-44">35-44 years</option>
+                                <option value="45-54">45-54 years</option>
+                                <option value="55+">55+ years</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 3: Living Situation -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                3. What's your living situation?
+                            </label>
+                            <select name="livingSituation" class="input-field w-full" required>
+                                <option value="">Select your living situation</option>
+                                <option value="dormitory">University dormitory</option>
+                                <option value="shared_apartment">Shared apartment</option>
+                                <option value="own_apartment">Own apartment</option>
+                                <option value="family_home">Family home</option>
+                                <option value="own_house">Own house</option>
+                            </select>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button type="button" onclick="prevStep()" class="btn-secondary px-6 py-2">
+                                Previous
+                            </button>
+                            <button type="button" onclick="nextStep()" class="btn-primary px-6 py-2">
+                                Next Step
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Occupation Field -->
-                    <div>
-                        <label for="occupation" class="block text-sm font-medium text-sus-text mb-2">
-                            Occupation
-                        </label>
-                        <select
-                            id="occupation"
-                            name="occupation"
-                            required
-                            class="input-field w-full"
-                        >
-                            <option value="">Select your occupation</option>
-                            <option value="student">Student</option>
-                            <option value="professional">Professional</option>
-                        </select>
+                    <!-- Step 3: More Personalization -->
+                    <div id="step3" class="step-content hidden">
+                        <h3 class="text-xl font-semibold text-sus-text mb-6">Step 3: Your Preferences</h3>
+                        
+                        <!-- Question 4: Transportation -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                4. What's your primary mode of transportation?
+                            </label>
+                            <select name="primaryTransport" class="input-field w-full" required>
+                                <option value="">Select your primary transport</option>
+                                <option value="walking">Walking</option>
+                                <option value="cycling">Cycling</option>
+                                <option value="public_transport">Public transport</option>
+                                <option value="car">Car</option>
+                                <option value="motorcycle">Motorcycle</option>
+                                <option value="scooter">Electric scooter</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 5: Budget Priority -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                5. What's your biggest monthly expense concern?
+                            </label>
+                            <select name="budgetPriority" class="input-field w-full" required>
+                                <option value="">Select your biggest concern</option>
+                                <option value="food">Food and groceries</option>
+                                <option value="transport">Transportation</option>
+                                <option value="utilities">Utilities (electricity, water, gas)</option>
+                                <option value="rent">Rent or mortgage</option>
+                                <option value="entertainment">Entertainment and leisure</option>
+                                <option value="education">Education and books</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 6: Environmental Interest -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                6. How interested are you in environmental causes?
+                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="environmentalInterest" value="very_interested" class="mr-3" required>
+                                    <div>
+                                        <div class="font-medium">Very interested</div>
+                                        <div class="text-sm text-sus-muted">I actively participate in environmental initiatives</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="environmentalInterest" value="somewhat_interested" class="mr-3" required>
+                                    <div>
+                                        <div class="font-medium">Somewhat interested</div>
+                                        <div class="text-sm text-sus-muted">I care about the environment and try to make good choices</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="environmentalInterest" value="not_very_interested" class="mr-3" required>
+                                    <div>
+                                        <div class="font-medium">Not very interested</div>
+                                        <div class="text-sm text-sus-muted">I'm mainly here for the rewards</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button type="button" onclick="prevStep()" class="btn-secondary px-6 py-2">
+                                Previous
+                            </button>
+                            <button type="button" onclick="nextStep()" class="btn-primary px-6 py-2">
+                                Next Step
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Password Field -->
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-sus-text mb-2">
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            required
-                            class="input-field w-full"
-                            placeholder="Create a password"
-                            minlength="8"
-                        >
-                        <p class="text-xs text-sus-muted mt-1">Must be at least 8 characters long</p>
+                    <!-- Step 4: Incentive Preferences -->
+                    <div id="step4" class="step-content hidden">
+                        <h3 class="text-xl font-semibold text-sus-text mb-6">Step 4: Your Reward Preferences</h3>
+                        
+                        <!-- Question 7: Preferred Rewards -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                7. What type of rewards would you prefer? (Select all that apply)
+                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="preferredRewards" value="food_vouchers" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Food vouchers</div>
+                                        <div class="text-sm text-sus-muted">Restaurant discounts and meal deals</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="preferredRewards" value="utility_bills" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Utility bill rebates</div>
+                                        <div class="text-sm text-sus-muted">Discounts on electricity, water, or gas bills</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="preferredRewards" value="transport" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Transport discounts</div>
+                                        <div class="text-sm text-sus-muted">Public transport passes or ride-sharing credits</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="preferredRewards" value="shopping" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Shopping vouchers</div>
+                                        <div class="text-sm text-sus-muted">Discounts at local stores and online retailers</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="preferredRewards" value="education" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Education benefits</div>
+                                        <div class="text-sm text-sus-muted">Course discounts or educational resources</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 8: Activity Preferences -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                8. Which activities would you be most likely to participate in?
+                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="activityPreferences" value="transport_tracking" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Transport tracking</div>
+                                        <div class="text-sm text-sus-muted">Logging my sustainable travel choices</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="activityPreferences" value="energy_saving" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Energy saving</div>
+                                        <div class="text-sm text-sus-muted">Reducing electricity and water usage</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="activityPreferences" value="waste_reduction" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Waste reduction</div>
+                                        <div class="text-sm text-sus-muted">Recycling and reducing waste</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="checkbox" name="activityPreferences" value="community_events" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Community events</div>
+                                        <div class="text-sm text-sus-muted">Participating in local environmental initiatives</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button type="button" onclick="prevStep()" class="btn-secondary px-6 py-2">
+                                Previous
+                            </button>
+                            <button type="button" onclick="nextStep()" class="btn-primary px-6 py-2">
+                                Next Step
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Confirm Password Field -->
-                    <div>
-                        <label for="confirmPassword" class="block text-sm font-medium text-sus-text mb-2">
-                            Confirm password
-                        </label>
-                        <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type="password"
-                            required
-                            class="input-field w-full"
-                            placeholder="Confirm your password"
-                        >
+                    <!-- Step 5: Final Questions -->
+                    <div id="step5" class="step-content hidden">
+                        <h3 class="text-xl font-semibold text-sus-text mb-6">Step 5: Final Details</h3>
+                        
+                        <!-- Question 9: Income Level -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                9. What's your approximate monthly income?
+                            </label>
+                            <select name="incomeLevel" class="input-field w-full" required>
+                                <option value="">Select your income level</option>
+                                <option value="under_1000">Under $1,000</option>
+                                <option value="1000_2000">$1,000 - $2,000</option>
+                                <option value="2000_4000">$2,000 - $4,000</option>
+                                <option value="4000_6000">$4,000 - $6,000</option>
+                                <option value="6000_8000">$6,000 - $8,000</option>
+                                <option value="over_8000">Over $8,000</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 10: Location Type -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                10. What type of area do you live in?
+                            </label>
+                            <select name="locationType" class="input-field w-full" required>
+                                <option value="">Select your area type</option>
+                                <option value="urban">Urban (city center)</option>
+                                <option value="suburban">Suburban</option>
+                                <option value="rural">Rural</option>
+                                <option value="university_town">University town</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 11: Social Media Usage -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                11. How often do you use social media?
+                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="socialMediaUsage" value="daily" class="mr-3" required>
+                                    <div class="font-medium">Daily</div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="socialMediaUsage" value="weekly" class="mr-3" required>
+                                    <div class="font-medium">Weekly</div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="socialMediaUsage" value="monthly" class="mr-3" required>
+                                    <div class="font-medium">Monthly</div>
+                                </label>
+                                <label class="flex items-center p-3 border border-sus-line rounded-lg hover:bg-sus-accent/10 cursor-pointer">
+                                    <input type="radio" name="socialMediaUsage" value="rarely" class="mr-3" required>
+                                    <div class="font-medium">Rarely</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 12: Referral Source -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-sus-text mb-3">
+                                12. How did you hear about susCoin?
+                            </label>
+                            <select name="referralSource" class="input-field w-full" required>
+                                <option value="">Select how you heard about us</option>
+                                <option value="social_media">Social media</option>
+                                <option value="friend_referral">Friend referral</option>
+                                <option value="university">University/College</option>
+                                <option value="workplace">Workplace</option>
+                                <option value="online_search">Online search</option>
+                                <option value="advertisement">Advertisement</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button type="button" onclick="prevStep()" class="btn-secondary px-6 py-2">
+                                Previous
+                            </button>
+                            <button type="button" onclick="nextStep()" class="btn-primary px-6 py-2">
+                                Next Step
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Terms and Conditions -->
-                    <div class="flex items-start">
-                        <input
-                            id="terms"
-                            name="terms"
-                            type="checkbox"
-                            required
-                            class="h-4 w-4 text-sus-primary focus:ring-sus-primary border-sus-line rounded mt-1"
-                        >
-                        <label for="terms" class="ml-2 block text-sm text-sus-muted">
-                            I agree to the 
-                            <a href="#" class="text-sus-primary hover:text-sus-primary-dark transition-colors">Terms of Service</a>
-                            and 
-                            <a href="#" class="text-sus-primary hover:text-sus-primary-dark transition-colors">Privacy Policy</a>
-                        </label>
-                    </div>
+                    <!-- Step 6: Terms and Submit -->
+                    <div id="step6" class="step-content hidden">
+                        <h3 class="text-xl font-semibold text-sus-text mb-6">Step 6: Final Step</h3>
+                        
+                        <!-- Newsletter Subscription -->
+                        <div class="mb-6">
+                            <div class="flex items-start">
+                                <input
+                                    id="newsletter"
+                                    name="newsletter"
+                                    type="checkbox"
+                                    class="h-4 w-4 text-sus-primary focus:ring-sus-primary border-sus-line rounded mt-1"
+                                >
+                                <label for="newsletter" class="ml-2 block text-sm text-sus-muted">
+                                    Subscribe to our newsletter for updates and tips on earning more credits
+                                </label>
+                            </div>
+                        </div>
 
-                    <!-- Newsletter Subscription -->
-                    <div class="flex items-start">
-                        <input
-                            id="newsletter"
-                            name="newsletter"
-                            type="checkbox"
-                            class="h-4 w-4 text-sus-primary focus:ring-sus-primary border-sus-line rounded mt-1"
-                        >
-                        <label for="newsletter" class="ml-2 block text-sm text-sus-muted">
-                            Subscribe to our newsletter for updates and tips on earning more credits
-                        </label>
-                    </div>
+                        <!-- Terms and Conditions -->
+                        <div class="mb-6">
+                            <div class="flex items-start">
+                                <input
+                                    id="terms"
+                                    name="terms"
+                                    type="checkbox"
+                                    required
+                                    class="h-4 w-4 text-sus-primary focus:ring-sus-primary border-sus-line rounded mt-1"
+                                >
+                                <label for="terms" class="ml-2 block text-sm text-sus-muted">
+                                    I agree to the 
+                                    <a href="#" class="text-sus-primary hover:text-sus-primary-dark transition-colors">Terms of Service</a>
+                                    and 
+                                    <a href="#" class="text-sus-primary hover:text-sus-primary-dark transition-colors">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
 
-                    <!-- Submit Button -->
-                    <button
-                        type="submit"
-                        class="btn-primary w-full py-3 text-lg"
-                        id="signupBtn"
-                    >
-                        <span id="signupBtnText">Create account</span>
-                        <span id="signupBtnLoading" class="hidden">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Creating account...
-                        </span>
-                    </button>
+                        <!-- Submit Button -->
+                        <div class="flex justify-between">
+                            <button type="button" onclick="prevStep()" class="btn-secondary px-6 py-2">
+                                Previous
+                            </button>
+                            <button
+                                type="submit"
+                                class="btn-primary px-8 py-3 text-lg"
+                                id="signupBtn"
+                            >
+                                <span id="signupBtnText">Create Account</span>
+                                <span id="signupBtnLoading" class="hidden">
+                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Creating account...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                 </form>
-
-                <!-- Divider -->
-                <div class="mt-6">
-                    <div class="relative">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-sus-line"></div>
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-sus-card text-sus-muted">Or continue with</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Social Signup Buttons -->
-                <div class="mt-6 grid grid-cols-2 gap-3">
-                    <button class="btn-secondary w-full py-3">
-                        <span class="text-lg mr-2">🔍</span>
-                        Google
-                    </button>
-                    <button class="btn-secondary w-full py-3">
-                        <span class="text-lg mr-2">📘</span>
-                        Facebook
-                    </button>
-                </div>
 
                 <!-- Login Link -->
                 <div class="mt-6 text-center">
@@ -223,7 +537,7 @@
                         </div>
                         <div class="flex items-center justify-center">
                             <span class="mr-2">✅</span>
-                            Redeem rewards from local partners
+                            Personalized rewards based on your preferences
                         </div>
                         <div class="flex items-center justify-center">
                             <span class="mr-2">✅</span>
@@ -244,7 +558,7 @@
         <div class="card max-w-md mx-4 text-center">
             <div class="text-6xl mb-4">🎉</div>
             <h3 class="text-xl font-bold text-sus-text mb-2">Welcome to susCoin!</h3>
-            <p class="text-sus-muted mb-6">Your account has been created successfully. Start earning credits for your climate impact!</p>
+            <p class="text-sus-muted mb-6">Your account has been created successfully. We've personalized your experience based on your preferences!</p>
             <button onclick="redirectToDashboard()" class="btn-primary w-full">
                 Go to Dashboard
             </button>
@@ -264,6 +578,9 @@
     </div>
 
     <script>
+        let currentStep = 1;
+        const totalSteps = 6;
+
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
@@ -279,54 +596,113 @@
             themeToggle.textContent = isDark ? '☀️' : '🌙';
         });
 
+        // Step navigation
+        function showStep(step) {
+            // Hide all steps
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step${i}`).classList.add('hidden');
+            }
+            // Show current step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            
+            // Update progress bar
+            const progress = (step / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function nextStep() {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.getElementById(`step${currentStep}`);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                if (!field.value) {
+                    field.focus();
+                    return false;
+                }
+            }
+            
+            // Special validation for step 1 (passwords)
+            if (currentStep === 1) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    return false;
+                }
+                
+                if (password.length < 8) {
+                    alert('Password must be at least 8 characters long!');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
         // Form handling
         const signupForm = document.getElementById('signupForm');
         const signupBtn = document.getElementById('signupBtn');
         const signupBtnText = document.getElementById('signupBtnText');
         const signupBtnLoading = document.getElementById('signupBtnLoading');
 
-        // Password validation
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
-
-        function validatePasswords() {
-            if (password.value !== confirmPassword.value) {
-                confirmPassword.setCustomValidity('Passwords do not match');
-            } else {
-                confirmPassword.setCustomValidity('');
-            }
-        }
-
-        password.addEventListener('change', validatePasswords);
-        confirmPassword.addEventListener('keyup', validatePasswords);
-
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Collect all form data
             const formData = new FormData(signupForm);
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const occupation = formData.get('occupation');
-            const password = formData.get('password');
-            const confirmPassword = formData.get('confirmPassword');
-            const terms = formData.get('terms');
-            const newsletter = formData.get('newsletter');
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                occupation: formData.get('occupation'),
+                newsletter: !!formData.get('newsletter'),
+                preferences: {}
+            };
 
-            // Validate passwords match
-            if (password !== confirmPassword) {
-                showError('Passwords do not match. Please try again.');
-                return;
+            // Collect all preference answers
+            const preferenceFields = [
+                'ageGroup', 'livingSituation', 'primaryTransport', 'budgetPriority',
+                'environmentalInterest', 'incomeLevel', 'locationType', 'socialMediaUsage', 'referralSource'
+            ];
+
+            preferenceFields.forEach(field => {
+                const value = formData.get(field);
+                if (value) {
+                    data.preferences[field] = value;
+                }
+            });
+
+            // Collect checkbox arrays
+            const preferredRewards = formData.getAll('preferredRewards');
+            const activityPreferences = formData.getAll('activityPreferences');
+            
+            if (preferredRewards.length > 0) {
+                data.preferences.preferredRewards = preferredRewards;
+            }
+            if (activityPreferences.length > 0) {
+                data.preferences.activityPreferences = activityPreferences;
             }
 
-            // Validate password length
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters long.');
-                return;
-            }
-
-            // Validate terms acceptance
-            if (!terms) {
-                showError('You must accept the Terms of Service and Privacy Policy.');
+            // Validate required fields
+            if (!data.name || !data.email || !data.password || !data.occupation) {
+                showError('Please fill in all required fields.');
                 return;
             }
 
@@ -336,27 +712,21 @@
             signupBtnLoading.classList.remove('hidden');
 
             try {
-                console.log('Sending signup request:', { name, email, occupation, newsletter: !!newsletter });
+                console.log('Sending signup request:', data);
                 
                 const response = await fetch('/api/signup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        occupation,
-                        password,
-                        newsletter: !!newsletter
-                    })
+                    body: JSON.stringify(data)
                 });
 
                 console.log('Response status:', response.status);
-                const data = await response.json();
-                console.log('Response data:', data);
+                const responseData = await response.json();
+                console.log('Response data:', responseData);
 
-                if (data.success) {
+                if (responseData.success) {
                     // Show success modal with confetti
                     confetti({
                         particleCount: 150,
@@ -366,7 +736,7 @@
                     
                     document.getElementById('successModal').classList.remove('hidden');
                 } else {
-                    showError(data.message || 'Signup failed. Please try again.');
+                    showError(responseData.message || 'Signup failed. Please try again.');
                 }
             } catch (error) {
                 console.error('Signup error:', error);
@@ -403,6 +773,22 @@
             if (e.target === e.currentTarget) {
                 closeErrorModal();
             }
+        });
+
+        // Initialize first step
+        showStep(1);
+
+        // Add event listeners for navigation buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Next step buttons
+            document.querySelectorAll('.next-step, #nextStep1').forEach(button => {
+                button.addEventListener('click', nextStep);
+            });
+
+            // Previous step buttons
+            document.querySelectorAll('.prev-step').forEach(button => {
+                button.addEventListener('click', prevStep);
+            });
         });
     </script>
 </body>
