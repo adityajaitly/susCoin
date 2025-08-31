@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - susCoin</title>
+    <meta name="description" content="Your personalized student dashboard for earning climate credits">
+    
+    <!-- Tailwind CSS -->
+    <link href="/styles/output.css" rel="stylesheet">
+    
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-sus-bg text-sus-text font-sans antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-40 bg-sus-card/80 backdrop-blur-md border-b border-sus-line">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/home" class="flex items-center">
+                        <img src="/images/logo.png" alt="susCoin Logo" class="h-10 w-auto mr-2 logo">
+                        <span class="text-2xl font-bold text-sus-primary">susCoin</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sus-muted">Welcome, <span class="text-sus-primary font-medium" id="userName">Student</span>! 🎓</span>
+                    <a href="/auth" class="btn-secondary text-sm">Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Welcome Section -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-sus-text mb-2">🎓 Student Dashboard</h1>
+                <p class="text-sus-muted">Track your climate impact and earn rewards while studying!</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="card text-center">
+                    <div class="text-3xl font-bold text-sus-primary mb-2" id="totalCredits">0</div>
+                    <div class="text-sus-muted">Total Credits</div>
+                </div>
+                <div class="card text-center">
+                    <div class="text-3xl font-bold text-sus-secondary mb-2" id="co2Saved">0.0</div>
+                    <div class="text-sus-muted">CO₂ Saved (kg)</div>
+                </div>
+                <div class="card text-center">
+                    <div class="text-3xl font-bold text-sus-accent mb-2" id="streakDays">0</div>
+                    <div class="text-sus-muted">Day Streak</div>
+                </div>
+                <div class="card text-center">
+                    <div class="text-3xl font-bold text-sus-success mb-2" id="campusRank">#-</div>
+                    <div class="text-sus-muted">Campus Rank</div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column: Quick Actions & Progress -->
+                <div class="space-y-6">
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">🚀 Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button class="w-full btn-primary text-left" onclick="trackActivity('walking')">
+                                🚶‍♀️ Track Walking to Class
+                            </button>
+                            <button class="w-full btn-secondary text-left" onclick="trackActivity('cycling')">
+                                🚴‍♀️ Track Cycling Trip
+                            </button>
+                            <button class="w-full btn-accent text-left" onclick="trackActivity('public_transport')">
+                                🚌 Track Public Transport
+                            </button>
+                            <button class="w-full btn-success text-left" onclick="openCalculator()">
+                                🧮 Calculate Trip Impact
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Progress -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">📊 Weekly Progress</h3>
+                        <canvas id="weeklyChart" class="w-full h-48"></canvas>
+                    </div>
+
+                    <!-- Study Goals -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">🎯 Study Goals</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Walk to campus 5x/week</span>
+                                <span class="text-sus-success">4/5 ✅</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Use public transport 3x/week</span>
+                                <span class="text-sus-warning">2/3 🔄</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Earn 100 credits this month</span>
+                                <span class="text-sus-primary">75/100 📈</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Column: Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Student-Specific Suggestions -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">💡 Student-Specific Suggestions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-sus-primary/10 rounded-lg border border-sus-primary/20">
+                                <h4 class="font-medium text-sus-primary mb-2">🏫 Campus Life</h4>
+                                <ul class="text-sm space-y-1 text-sus-muted">
+                                    <li>• Join campus sustainability club</li>
+                                    <li>• Use campus bike share program</li>
+                                    <li>• Attend green events for bonus credits</li>
+                                </ul>
+                            </div>
+                            <div class="p-4 bg-sus-secondary/10 rounded-lg border border-sus-secondary/20">
+                                <h4 class="font-medium text-sus-secondary mb-2">📚 Study Smart</h4>
+                                <ul class="text-sm space-y-1 text-sus-muted">
+                                    <li>• Study in natural light to save energy</li>
+                                    <li>• Use digital notes instead of paper</li>
+                                    <li>• Share textbooks with classmates</li>
+                                </ul>
+                            </div>
+                            <div class="p-4 bg-sus-accent/10 rounded-lg border border-sus-accent/20">
+                                <h4 class="font-medium text-sus-accent mb-2">🍕 Food & Budget</h4>
+                                <ul class="text-sm space-y-1 text-sus-muted">
+                                    <li>• Use your credits for campus dining</li>
+                                    <li>• Buy local produce at farmers market</li>
+                                    <li>• Cook with roommates to save energy</li>
+                                </ul>
+                            </div>
+                            <div class="p-4 bg-sus-success/10 rounded-lg border border-sus-success/20">
+                                <h4 class="font-medium text-sus-success mb-2">🚗 Transportation</h4>
+                                <ul class="text-sm space-y-1 text-sus-muted">
+                                    <li>• Carpool with classmates</li>
+                                    <li>• Use student discount on transit</li>
+                                    <li>• Walk to nearby stores</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">📝 Recent Activities</h3>
+                        <div class="space-y-3" id="recentActivities">
+                            <div class="flex items-center justify-between p-3 bg-sus-success/10 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-2xl">🚶‍♀️</span>
+                                    <div>
+                                        <div class="font-medium">Walked to Campus</div>
+                                        <div class="text-sm text-sus-muted">Today, 9:00 AM</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-sus-success">+15 credits</div>
+                                    <div class="text-sm text-sus-muted">2.1 kg CO₂ saved</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-sus-primary/10 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-2xl">🚌</span>
+                                    <div>
+                                        <div class="font-medium">Public Transport</div>
+                                        <div class="text-sm text-sus-muted">Yesterday, 3:30 PM</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-sus-primary">+12 credits</div>
+                                    <div class="text-sm text-sus-muted">1.8 kg CO₂ saved</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campus Leaderboard -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">🏆 Campus Leaderboard</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-sus-primary/10 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-2xl">🥇</span>
+                                    <div>
+                                        <div class="font-medium">Sarah M.</div>
+                                        <div class="text-sm text-sus-muted">Environmental Science</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-sus-primary">847 credits</div>
+                                    <div class="text-sm text-sus-muted">Level 5</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-sus-secondary/10 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-2xl">🥈</span>
+                                    <div>
+                                        <div class="font-medium">Alex K.</div>
+                                        <div class="text-sm text-sus-muted">Engineering</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-sus-secondary">723 credits</div>
+                                    <div class="text-sm text-sus-muted">Level 4</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-sus-accent/10 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-2xl">🥉</span>
+                                    <div>
+                                        <div class="font-medium">You</div>
+                                        <div class="text-sm text-sus-muted">Current Rank</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-sus-accent">75 credits</div>
+                                    <div class="text-sm text-sus-muted">Level 1</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Activity Tracking Modal -->
+    <div id="activityModal" class="fixed inset-0 bg-black/50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-sus-card rounded-lg p-6 max-w-md w-full">
+                <h3 class="text-xl font-semibold mb-4">Track Activity</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Activity Type</label>
+                        <select id="activityType" class="w-full p-3 border border-sus-line rounded-lg bg-sus-card">
+                            <option value="walking">Walking</option>
+                            <option value="cycling">Cycling</option>
+                            <option value="public_transport">Public Transport</option>
+                            <option value="carpool">Carpool</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-sus-muted mb-2">Distance (km)</label>
+                        <input type="number" id="activityDistance" step="0.1" min="0" class="w-full p-3 border border-sus-line rounded-lg bg-sus-card" placeholder="e.g., 2.5">
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="closeActivityModal()" class="flex-1 btn-secondary">Cancel</button>
+                        <button onclick="submitActivity()" class="flex-1 btn-primary">Track</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Mock data for student dashboard
+        const studentData = {
+            totalCredits: 75,
+            co2Saved: 12.3,
+            streakDays: 5,
+            campusRank: 15
+        };
+
+        // Update dashboard with user data
+        function updateDashboard() {
+            document.getElementById('totalCredits').textContent = studentData.totalCredits;
+            document.getElementById('co2Saved').textContent = studentData.co2Saved.toFixed(1);
+            document.getElementById('streakDays').textContent = studentData.streakDays;
+            document.getElementById('campusRank').textContent = `#${studentData.campusRank}`;
+        }
+
+        // Initialize weekly chart
+        function initWeeklyChart() {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Credits Earned',
+                        data: [15, 12, 18, 20, 16, 8, 5],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Activity tracking functions
+        function trackActivity(type) {
+            document.getElementById('activityType').value = type;
+            document.getElementById('activityModal').classList.remove('hidden');
+        }
+
+        function closeActivityModal() {
+            document.getElementById('activityModal').classList.add('hidden');
+        }
+
+        function submitActivity() {
+            const type = document.getElementById('activityType').value;
+            const distance = parseFloat(document.getElementById('activityDistance').value);
+            
+            if (!distance || distance <= 0) {
+                alert('Please enter a valid distance');
+                return;
+            }
+
+            // Calculate credits based on activity type and distance
+            let credits = 0;
+            let co2Saved = 0;
+            
+            switch(type) {
+                case 'walking':
+                    credits = Math.round(distance * 6);
+                    co2Saved = distance * 0.14;
+                    break;
+                case 'cycling':
+                    credits = Math.round(distance * 8);
+                    co2Saved = distance * 0.18;
+                    break;
+                case 'public_transport':
+                    credits = Math.round(distance * 5);
+                    co2Saved = distance * 0.12;
+                    break;
+                case 'carpool':
+                    credits = Math.round(distance * 3);
+                    co2Saved = distance * 0.08;
+                    break;
+            }
+
+            // Update dashboard
+            studentData.totalCredits += credits;
+            studentData.co2Saved += co2Saved;
+            updateDashboard();
+
+            // Add to recent activities
+            addRecentActivity(type, credits, co2Saved);
+
+            // Close modal
+            closeActivityModal();
+            document.getElementById('activityDistance').value = '';
+
+            // Show success message
+            showToast(`✅ Activity tracked! +${credits} credits earned`);
+        }
+
+        function addRecentActivity(type, credits, co2Saved) {
+            const activitiesContainer = document.getElementById('recentActivities');
+            const activityDiv = document.createElement('div');
+            
+            const icons = {
+                'walking': '🚶‍♀️',
+                'cycling': '🚴‍♀️',
+                'public_transport': '🚌',
+                'carpool': '🚗'
+            };
+
+            const names = {
+                'walking': 'Walking',
+                'cycling': 'Cycling',
+                'public_transport': 'Public Transport',
+                'carpool': 'Carpool'
+            };
+
+            activityDiv.className = 'flex items-center justify-between p-3 bg-sus-success/10 rounded-lg';
+            activityDiv.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">${icons[type]}</span>
+                    <div>
+                        <div class="font-medium">${names[type]}</div>
+                        <div class="text-sm text-sus-muted">Just now</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-semibold text-sus-success">+${credits} credits</div>
+                    <div class="text-sm text-sus-muted">${co2Saved.toFixed(1)} kg CO₂ saved</div>
+                </div>
+            `;
+
+            activitiesContainer.insertBefore(activityDiv, activitiesContainer.firstChild);
+        }
+
+        function openCalculator() {
+            window.location.href = '/calculator';
+        }
+
+        function showToast(message) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 bg-sus-success text-white px-6 py-4 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+            initWeeklyChart();
+            
+            // Track page view
+            socket.emit('analytics', { event: 'page_view', data: { page: 'student_dashboard' } });
+        });
+    </script>
+</body>
+</html>
